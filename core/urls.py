@@ -5,4 +5,5 @@ app_name = 'core'
 
 urlpatterns = [
     path('report/submit/', views.submit_report, name='submit_report'),
+    path("test-db/", views.test_db, name="test_db"),
 ]

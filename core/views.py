@@ -3,11 +3,13 @@ from django.views.decorators.http import require_POST
 from django.contrib.contenttypes.models import ContentType
 from .models import Report
 
+#تست db
+from django.http import HttpResponse
+from django.db import connection
 
 
 @require_POST
 def submit_report(request):
-
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'error', 'message': 'Please Login First.'}, status=403)
 
@@ -21,9 +23,9 @@ def submit_report(request):
 
         # جلوگیری از گزارش تکراری
         if Report.objects.filter(
-            user=request.user,
-            content_type=content_type,
-            object_id=object_id
+                user=request.user,
+                content_type=content_type,
+                object_id=object_id
         ).exists():
             return JsonResponse({'status': 'error', 'message': 'You Already Reported.'}, status=400)
 
@@ -42,3 +44,19 @@ def submit_report(request):
 
     except Exception:
         return JsonResponse({'status': 'error', 'message': 'There Seems To Be A problem While Reporting.'}, status=400)
+
+
+
+
+
+# تست db
+
+
+def test_db(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1;")
+            row = cursor.fetchone()
+        return HttpResponse(f"DB OK: {row}")
+    except Exception as e:
+        return HttpResponse(f"DB ERROR: {e}")
