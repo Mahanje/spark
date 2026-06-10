@@ -99,7 +99,6 @@
     margin-left: 8px;
 }
 
-/* ===== SEARCH FORM ===== */
 .search-form {
     display: flex;
     align-items: center;
@@ -111,44 +110,38 @@
     overflow: hidden;
 }
 
-/* input container */
-.search-box {
+.search-wrapper {
     flex: 1;
     display: flex;
     align-items: center;
     padding: 0 12px;
 }
 
-/* input */
 .search-input {
     width: 100%;
-    height: 38px;
     border: none;
     outline: none;
     background: transparent;
     color: #fff;
     font-size: 16px;
+    height: 38px;
+    min-width: 0; /* 🔥 خیلی مهم برای flex */
 }
 
-/* placeholder */
-.search-input::placeholder {
-    color: #aaa;
-}
-
-/* button */
 .search-btn {
     width: 48px;
     height: 40px;
     border: none;
     background: #222;
-    color: #fff;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .search-btn:hover {
     background: #333;
 }
-
 
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
