@@ -167,3 +167,10 @@
         display: flex;
     }
 }
+
+@media (max-width: 768px) {
+    .btn-link,
+    .btn-signup {
+        display: none !important;
+    }
+}
