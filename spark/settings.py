@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 
+import dj_database_url
+
 # from django.conf.global_settings import MEDIA_URL, MEDIA_ROOT
 
 # from dotenv import load_dotenv
@@ -85,22 +87,13 @@ WSGI_APPLICATION = 'spark.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import os
-import dj_database_url
 
-if os.environ.get("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.parse(
-            os.environ["DATABASE_URL"]
-        )
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL")
+    )
+}
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
