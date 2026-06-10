@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-1x-0og8k3uuavag+f78t3a9acx@ar(+76g8#e=df0pa0@sc=4$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "spark-v5hc.onrender.com",
