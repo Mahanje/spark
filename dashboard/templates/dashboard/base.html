@@ -1,0 +1,33 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/comment.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 class="logo">Dashboard</h2>
+
+    <ul>
+        <li><a href="/dashboard/">Home</a></li>
+        <li><a href="/dashboard/users/">Users</a></li>
+        <li><a href="/dashboard/videos/">Videos</a></li>
+        <li><a href="/dashboard/comments/">Comments</a></li>
+        <li><a href="/dashboard/reports/">Reports</a></li>
+    </ul>
+</div>
+
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+
+<script src="/static/dashboard/js/dashboard.js"></script>
+</body>
+</html>

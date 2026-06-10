@@ -1,0 +1,62 @@
+.subscriptions-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.channel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.channel-card {
+    background: #1c1c1c;
+    border-radius: 12px;
+    padding: 14px;
+    transition: 0.2s ease;
+}
+
+.channel-card:hover {
+    background: #2a2a2a;
+}
+
+.channel-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    color: white;
+}
+
+.channel-info h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+/* مخفی کردن اسکرول بار */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* آیتم کانال */
+.channel-item {
+    transition: all 0.2s ease;
+}
+
+/* دایره آواتار */
+.avatar-circle {
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+/* هاور */
+.channel-item:hover .avatar-circle {
+    border-color: #f00 !important;
+}

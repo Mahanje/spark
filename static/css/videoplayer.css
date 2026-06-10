@@ -1,0 +1,139 @@
+/**
+ * Native HTML5 video player styling
+ */
+
+.video-player {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.video-player video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.video-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    text-align: center;
+    gap: 12px;
+}
+
+.error-icon {
+    font-size: 3rem;
+    color: var(--accent-red);
+}
+
+.video-error p {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.video-error small {
+    color: var(--text-secondary);
+}
+
+video::-webkit-media-controls {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+}
+
+video::-webkit-media-controls-panel {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+}
+
+/* مخفی کردن دکمه منوی سه نقطه در مرورگرهای مبتنی بر Chrome */
+video::-webkit-media-controls-enclosure {
+    overflow: hidden;
+}
+
+video::-webkit-media-controls-panel {
+    width: calc(100% + 30px); /* منو را به بیرون از کادر هل می‌دهد */
+}
+
+/* حذف سه‌نقطه و دکمه‌های اضافی در مرورگرهای Chrome, Edge, Safari */
+video::-webkit-media-controls-timeline-context-button,
+video::-webkit-media-controls-overflow-button {
+    display: none !important;
+}
+
+/* این کد برای اطمینان از حذف کامل در نسخه‌های مختلف است */
+video::-internal-media-controls-download-button {
+    display: none;
+}
+
+
+.video-custom-menu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2147483647;
+}
+
+.v-menu-btn {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.video-player-container:hover .v-menu-btn,
+.video-custom-menu:hover .v-menu-btn,
+.v-menu-btn.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+/*.v-menu-btn {*/
+/*    opacity: 1 !important;*/
+/*    visibility: visible !important;*/
+
+/*    width: 36px;*/
+/*    height: 36px;*/
+
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    gap: 4px;*/
+
+/*    background: rgba(0, 0, 0, 0.6);*/
+/*    border: none;*/
+/*    border-radius: 50%;*/
+/*    cursor: pointer;*/
+/*    z-index: 9999;*/
+/*}*/
+
+/*.v-menu-btn span {*/
+/*    width: 4px;*/
+/*    height: 4px;*/
+/*    padding: 2px;*/
+/*    background: white;*/
+/*    border-radius: 50%;*/
+/*    display: block;*/
+/*    pointer-events: none;*/
+/*}*/

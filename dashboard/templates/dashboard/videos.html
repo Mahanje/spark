@@ -1,0 +1,56 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %} - Videos{% endblock %}
+
+{% block content %}
+<h1>Videos</h1>
+
+<div class="table-controls">
+
+<label>Show</label>
+
+</div>
+
+<table class="table">
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>User</th>
+        <th>Date</th>
+    </tr>
+
+    {% for v in videos %}
+    <tr>
+        <td>{{ v.id }}</td>
+        <td>{{ v.title }}</td>
+        <td>{{ v.user.username }}</td>
+        <td>{{ v.created_at }}</td>
+    </tr>
+    {% endfor %}
+
+</table>
+{% include "components/pagination.html" %}
+
+<script>
+
+const perPageSelect = document.getElementById("per-page-select");
+
+if(perPageSelect){
+
+    perPageSelect.addEventListener("change", function(){
+
+        const perPage = this.value;
+
+        const url = new URL(window.location.href);
+
+        url.searchParams.set("per_page", perPage);
+        url.searchParams.set("page", 1);
+
+        window.location.href = url;
+
+    });
+
+}
+
+</script>
+{% endblock %}

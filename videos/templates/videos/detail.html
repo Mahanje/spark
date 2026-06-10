@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ video.title }} - Spark{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/videos.css' %}" xmlns="http://www.w3.org/1999/html">
+<link rel="stylesheet" href="{% static 'css/videoplayer.css' %}">
+<link rel="stylesheet" href="{% static 'css/comment.css' %}">
+<link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+<style>
+    /* استایل‌های داینامیک برای دکمه سابسکرایب جهت اطمینان از اعمال وضعیت active */
+    .subscribe-btn.active {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="video-player-container">
+    <div class="video-player" style="position: relative;"> <!-- اضافه کردن relative برای جایگذاری منو -->
+
+        <!-- منوی سه‌نقطه ویدیو -->
+        <div class="video-custom-menu">
+            <button type="button" class="v-menu-btn menu-btn" id="videoMenuBtn">
+                ⋮
+
+            </button>
+            <div class="menu-dropdown report-btn" id="videoMenuDropdown"
+                data-type="video"
+                data-id="{{ video.id }}">
+                Report
+                <!-- گزینه‌های دیگر -->
+            </div>
+        </div>
+        <video id="video-player"
+               controls
+               controlslist="nodownload noplaybackrate"
+               disablePictureInPicture
+               preload="metadata"
+               {% if video.thumbnail_url %}poster="{{ video.thumbnail_url }}" {% endif %}>
+            <source src="{{ video.video_url }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <div id="video-error" class="video-error" style="display: none;">
+            <span class="error-icon">⚠️</span>
+            <p>Video Unavailable</p>
+        </div>
+    </div>
+</div>
+
+<div class="video-details">
+    <h1>{{ video.title }}</h1>
+
+    <div class="video-stats">
+        <span class="video-stats-left">{{ video.views }} views | {{ video.created_at|date:"M d, Y" }}</span>
+        <div class="video-actions">
+            <div class="video-actions">
+
+                {% if user.is_authenticated %}
+                <button class="vote-btn {% if user_vote == 1 %}active{% endif %}"
+                        onclick="vote({{ video.id }}, 1)">
+                    👍 <span id="like-count">{{ video.likes }}</span>
+                </button>
+                {% else %}
+                <button class="vote-btn"
+                        onclick="window.location.href='{% url 'accounts:login' %}'">
+                    👍 <span>{{ video.likes }}</span>
+                </button>
+                {% endif %}
+
+
+                {% if user.is_authenticated %}
+                <button class="vote-btn {% if user_vote == -1 %}active{% endif %}"
+                        onclick="vote({{ video.id }}, -1)">
+                    👎 <span id="dislike-count">{{ video.dislikes }}</span>
+                </button>
+                {% else %}
+                <button class="vote-btn"
+                        onclick="window.location.href='{% url 'accounts:login' %}'">
+                    👎 <span>{{ video.dislikes }}</span>
+                </button>
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- بخش اطلاعات کانال و آپلودکننده -->
+    <div class="video-channel"
+         style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="channel-avatar"
+                 style="width: 40px; height: 40px; background-color: #ff0000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; overflow: hidden;">
+                {% if video.user.profile.avatar_url %}
+                <img src="{{ video.user.profile.avatar_url }}" alt="{{ video.user.username }}"
+                     style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                {{ video.user.username|slice:":1"|upper }}
+                {% endif %}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <a href="{% url 'videos:channel' video.user.username %}" class="channel-name"
+                   style="text-decoration: none; font-weight: bold; color: white; font-size: 16px;">
+                    {{ video.user.username }}
+                </a>
+            </div>
+        </div>
+
+        <!-- دکمه سابسکرایب -->
+        {% if request.user.is_authenticated and request.user != video.user %}
+        <button id="subscribe-btn"
+                class="subscribe-btn {% if is_subscribed %}active{% endif %}"
+                onclick="toggleSubscribe('{{ video.user.username }}')"
+                style="background-color: #ffffff; color: #000000; border: none; padding: 10px 20px; border-radius: 25px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s ease; white-space: nowrap;">
+            {% if is_subscribed %}Subscribed{% else %}Subscribe{% endif %}
+        </button>
+        {% endif %}
+    </div>
+
+    {% if video.description %}
+    <p class="video-description">{{ video.description }}</p>
+    {% endif %}
+
+    {% if request.user == video.user %}
+    <div class="video-owner-actions" style="margin-top: 10px;">
+        <button class="delete-btn" type="button" onclick="deleteVideo({{ video.id }})">Delete</button>
+    </div>
+    {% endif %}
+
+    <div class="comments-section">
+        <h3>Comments ({{ video.comments.all.count }})</h3>
+        {% if user.is_authenticated %}
+        <div class="comment-form">
+            <textarea id="comment-text" placeholder="Add a comment..."></textarea>
+            <button type="button" onclick="submitComment({{ video.id }})">Post Comment</button>
+        </div>
+        {% else %}
+        <p><a href="{% url 'accounts:login' %}">Log in</a> to leave a comment.</p>
+        {% endif %}
+
+        <div id="comment-list">
+            {% for comment in video.comments.all reversed %}
+
+            <div class="comment-item comment" id="comment-{{ comment.id }}">
+
+                <!-- آواتار -->
+                <div class="comment-avatar">
+                    {% if comment.user.profile.avatar_url %}
+                    <img src="{{ comment.user.profile.avatar_url }}" alt="{{ comment.user.username }}">
+                    {% else %}
+                    {{ comment.user.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+
+                <!-- بدنه کامنت -->
+                <div class="comment-body">
+
+                    <div class="comment-header">
+
+                        <div class="comment-meta">
+                    <span class="comment-username">
+                        {{ comment.user.username }}
+                    </span>
+                            <span class="comment-date">
+                        • {{ comment.created_at|timesince }} ago
+                    </span>
+                        </div>
+
+                        {% if user.is_authenticated %}
+                        <div class="comment-menu">
+                            <button class="comment menu-btn ">⋮</button>
+
+                            <div class="menu-dropdown">
+                                <button class="report-btn"
+                                        data-type="comment"
+                                        data-id="{{ comment.id }}">
+                                    Report
+                                </button>
+
+                                {% if comment.user == request.user %}
+                                <button class="report-btn" onclick="deleteComment({{ comment.id }})">
+                                    Delete
+                                </button>
+                                {% endif %}
+
+                                {% if request.user.is_staff %}
+                                <button class="report-btn" onclick="removeComment({{ comment.id }})">
+                                    Remove
+                                </button>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="comment-text">
+                        {{ comment.text }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+            <p id="no-comments">No comments yet. Be the first to comment!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+
+<div id="reportModal" class="report-modal">
+
+    <div class="report-box">
+
+        <h3>Report Content</h3>
+
+        <select id="report-reason">
+            <option value="spam">Spam</option>
+            <option value="harassment">Harassment</option>
+            <option value="violence">Violence</option>
+            <option value="copyright">Copyright</option>
+            <option value="other">Other</option>
+        </select>
+
+        <textarea id="report-description" placeholder="Additional details (optional)"></textarea>
+
+        <div class="report-actions">
+            <button onclick="submitReport()">Submit</button>
+            <button onclick="closeReportModal()">Cancel</button>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const videoPlayer = document.getElementById("video-player");
+        const csrf = '{{ csrf_token }}';
+
+        // اطمینان: اگر source خالی شد/نشد، لااقل MP4 را مستقیم ست کن
+        // (اختیاری، ولی برای جلوگیری از هر override احتمالی خوبه)
+        if (videoPlayer && !videoPlayer.currentSrc) {
+            videoPlayer.src = "{{ video.video_url }}";
+            videoPlayer.load();
+        }
+
+        // تابع سابسکرایب
+        window.toggleSubscribe = function (username) {
+            fetch("{% url 'accounts:toggle_subscribe' 'PLACEHOLDER' %}".replace('PLACEHOLDER', username), {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrf,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const btn = document.getElementById('subscribe-btn');
+                        if (btn) {
+                            const on = data.is_subscribed;  // <-- این مهمه
+                            btn.textContent = on ? 'Subscribed' : 'Subscribe';
+                            btn.classList.toggle('active', on);
+                        }
+                    } else {
+                        alert(data.error);
+                    }
+                });
+        };
+
+        window.submitComment = function (videoId) {
+            const text = document.getElementById('comment-text').value.trim();
+            if (!text) return;
+
+            const formData = new FormData();
+            formData.append('text', text);
+
+            fetch("{% url 'videos:add_comment' video.id %}", {
+                method: "POST",
+                headers: {"X-CSRFToken": csrf},
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) location.reload();
+                });
+        };
+
+        window.deleteVideo = function (videoId) {
+            if (!confirm("Are you sure?")) return;
+
+            fetch("{% url 'videos:delete_video' video.id %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrf,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(async response => {
+                    const data = await response.json();
+                    if (response.ok) {
+                        window.location.href = '{% url "videos:list" %}';
+                    } else {
+                        console.error("Delete Error:", data);
+                        alert("Error: " + (data.error || "Something went wrong"));
+                    }
+                })
+                .catch(err => {
+                    console.error("Fetch Error:", err);
+                    alert("Network error, check console.");
+                });
+        };
+
+        window.vote = function (videoId, voteValue) {
+            fetch("{% url 'videos:video_vote' video.id %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrf
+                },
+                body: `vote=${voteValue}`
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("like-count").textContent = data.likes;
+                        document.getElementById("dislike-count").textContent = data.dislikes;
+
+                        const likeBtn = document.getElementById("like-btn");
+                        const dislikeBtn = document.getElementById("dislike-btn");
+                        likeBtn.classList.toggle("active", data.user_vote === 1);
+                        dislikeBtn.classList.toggle("active", data.user_vote === -1);
+                    }
+                });
+        };
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const videoPlayer = document.getElementById("video-player");
+        const csrf = '{{ csrf_token }}';
+
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuButtons = document.querySelectorAll(".menu-btn");
+
+        menuButtons.forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+
+                // بستن همه منوهای باز قبل از باز کردن منوی جدید
+                document.querySelectorAll(".menu-dropdown.show").forEach(m => {
+                    m.classList.remove("show");
+                });
+
+                // پیدا کردن کانتینرِ دکمه‌ای که کلیک شده
+                const container = this.closest(".video-custom-menu, .comment-menu");
+
+                if (container) {
+                    const dropdown = container.querySelector(".menu-dropdown");
+                    if (dropdown) {
+                        dropdown.classList.add("show");
+                        console.log("Dropdown با کلاس 'show' فعال شد.");
+                    } else {
+                        console.log("خطا: Dropdown داخل کانتینر پیدا نشد.");
+                    }
+                } else {
+                    console.log("خطا: کانتینر .video-custom-menu یا .comment-menu پیدا نشد.");
+                }
+            });
+        });
+
+        // بستن منو با کلیک در هر جای صفحه (خارج از منو)
+        document.addEventListener("click", function () {
+            document.querySelectorAll(".menu-dropdown.show").forEach(m => {
+                m.classList.remove("show");
+            });
+        });
+    });
+
+    function deleteComment(id) {
+
+            if (!confirm("Delete this comment?")) return
+
+            fetch(`/comment/${id}/delete/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                }
+            })
+                .then(() => location.reload())
+
+        }
+
+
+
+        function removeComment(id) {
+
+            if (!confirm("Remove this comment?")) return
+
+            fetch(`/comment/${id}/remove/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                }
+            })
+                .then(() => location.reload())
+
+        }
+</script>
+
+
+{% endblock %}
+

@@ -1,0 +1,155 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <h2 class="page-title">Managing Reports</h2>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Reporter</th>
+                <th>Type</th>
+                <th>Preview</th>
+                <th>Reason</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for report in reports %}
+            <tr class="{% if report.is_resolved %}resolved-row{% endif %}">
+
+                <td>{{ report.user.username }}</td>
+
+                <td>
+                        <span class="badge {{ report.content_type.model }}">
+                            {{ report.content_type.model|title }}
+                        </span>
+                </td>
+
+                <td class="preview-cell">
+                    {% with obj=report.content_object %}
+                    {% if report.content_type.model == "video" and obj %}
+                    <a href="{% url 'videos:detail' obj.id %}" target="_blank" class="preview-box"
+                       style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                        <div class="preview-thumb">
+                            {% if obj.thumbnail_url %}
+                            <img src="{{ obj.thumbnail_url }}" alt="thumb"
+                                 style="width: 60px; height: 35px; object-fit: cover; border-radius: 4px;">
+                            {% else %}
+                            <img src="{% static 'images/images (1).png' %}" alt="default"
+                                 style="width: 60px; height: 35px; object-fit: cover; border-radius: 4px;">
+                            {% endif %}
+                        </div>
+                        <div class="preview-info">
+                            <div class="preview-title"
+                                 style="font-size: 0.85rem; color: #fff; font-weight: 500; line-height: 1.2;">
+                                {{ obj.title|truncatechars:20 }}
+                            </div>
+                        </div>
+                    </a>
+
+                    {% elif report.content_type.model == "comment" and obj %}
+                    <a href="{% url 'videos:detail' obj.video.id %}#comment-{{ obj.id }}" target="_blank"
+                       class="comment-preview" style="display: block; text-decoration: none;">
+                        <div class="preview-info">
+                            <div class="preview-title">
+                                {{ obj.text|truncatechars:50 }}
+                            </div>
+
+                        </div>
+                    </a>
+
+                    {% elif report.content_type.model == "user" and obj %}
+                    <a href="{% url 'videos:channel' obj.username %}" target="_blank" class="profile-preview">
+                        <div class="preview-thumb">
+                            {% if obj.profile.avatar %}
+                            <img src="{{ obj.profile.avatar.url }}" alt="avatar"
+                                 style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                            <div style="width: 35px; height: 35px; background: #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #ccc;">
+                                {{ obj.username|slice:":1"|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="preview-info">
+                            <div class="preview-title" style="font-size: 0.85rem; color: #fff;">{{ obj.username }}</div>
+                        </div>
+                    </a>
+
+                    {% else %}
+                    <div class="preview-missing" style="font-size: 0.8rem; color: #666;">
+                        <i class="fas fa-exclamation-triangle"></i> Content removed
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                        <span class="reason-text" title="{{ report.description }}">
+                            {{ report.get_reason_display }}
+                        </span>
+                </td>
+
+                <td>{{ report.created_at|date:"Y/m/d H:i" }}</td>
+
+                <td>
+                    {% if report.is_resolved %}
+                    <span class="status-done">✅ Done</span>
+                    {% else %}
+                    <span class="status-pending">⏳ Waiting</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if not report.is_resolved %}
+                    <a href="{% url 'dashboard:resolve_report' report.pk %}" class="btn-resolve">
+                        Confirm
+                    </a>
+                    {% endif %}
+                </td>
+
+            </tr>
+
+            {% empty %}
+            <tr>
+                <td colspan="7">No Reports</td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div id="reportModal" class="report-modal">
+
+    <div class="report-modal-content">
+
+        <h3>Report</h3>
+
+        <select id="reportReason">
+            <option value="spam">Spam</option>
+            <option value="abuse">Abusive</option>
+            <option value="copyright">Copyright</option>
+            <option value="other">Other</option>
+        </select>
+
+        <textarea id="reportDescription"
+                  placeholder="More details (optional)"></textarea>
+
+        <div class="report-actions">
+            <button onclick="submitReport()">Submit</button>
+            <button onclick="closeReportModal()">Cancel</button>
+        </div>
+
+    </div>
+</div>
+{% include "components/pagination.html" %}
+
+{% endblock %}

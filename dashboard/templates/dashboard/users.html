@@ -1,0 +1,129 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<div class="users-top">
+
+    <h1>Users ({{ total_users }})</h1>
+
+    <input
+            type="text"
+            id="user-search"
+            placeholder="Search users..."
+            value="{{ query }}">
+
+</div>
+
+
+<table class="table">
+
+    <thead>
+    <tr>
+
+        <th>
+            <a href="?sort=username&per_page={{ per_page }}">Username</a>
+        </th>
+
+        <th>Email</th>
+
+        <th>
+            <a href="?sort=date_joined&per_page={{ per_page }}">Joined</a>
+        </th>
+
+        <th>Status</th>
+
+        <th>Actions</th>
+
+    </tr>
+    </thead>
+
+
+    <tbody id="table">
+
+    {% for user in page_obj %}
+
+    <tr>
+
+        <td>{{ user.username }}</td>
+
+        <td>{{ user.email }}</td>
+
+        <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+
+        <td>
+
+            {% if user.is_staff %}
+            <span class="badge badge-staff">Staff</span>
+            {% endif %}
+
+            {% if user.is_active %}
+            <span class="badge badge-active">Active</span>
+            {% else %}
+            <span class="badge badge-inactive">Inactive</span>
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            <a href="{% url 'dashboard:edit_user' user.id %}" class="edit-link">Edit</a>
+            |
+            <a href="{% url 'dashboard:delete_user' user.id %}" class="delete-link">Delete</a>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+
+<div id="no-results" class="no-results" style="display:none">
+    <span class="search-icon">🔍</span>
+    <span id="no-results-text"></span>
+</div>
+
+
+{% include "components/pagination.html" %}
+
+
+<script>
+
+    const searchInput = document.getElementById("user-search")
+
+    searchInput.addEventListener("keyup", function () {
+
+        const query = this.value.trim()
+
+        fetch(`?q=${query}&per_page={{ per_page }}`)
+            .then(response => response.text())
+            .then(html => {
+
+                const parser = new DOMParser()
+                const doc = parser.parseFromString(html, "text/html")
+
+                const newTable = doc.querySelector("#users-table-body")
+
+                const tableBody = document.querySelector("#users-table-body")
+                const noResults = document.getElementById("no-results")
+                const noResultsText = document.getElementById("no-results-text")
+
+                tableBody.innerHTML = newTable.innerHTML
+
+                if (newTable.children.length === 0 && query !== "") {
+                    noResultsText.textContent = `No users found for "${query}"`
+                    noResults.style.display = "block"
+                } else {
+                    noResults.style.display = "none"
+                }
+
+            })
+
+    })
+
+</script>
+
+{% endblock %}

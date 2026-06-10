@@ -1,0 +1,221 @@
+.main-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
+    background-color: #0f0f0f;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    box-sizing: border-box;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-left, .nav-center, .nav-right {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-left {
+    gap: 16px;
+    min-width: 180px;
+}
+
+/* بخش سرچ کپسولی - طرح جدید */
+.nav-center {
+    flex: 0 1 720px;
+    padding: 0 16px;
+    justify-content: center;
+}
+
+/* باکس اصلی سرچ */
+.search-form {
+    display: flex;
+    width: 100%;
+    max-width: 600px;
+    background: #121212; /* رنگ پس‌زمینه داخل باکس */
+    border: 1px solid #333; /* بوردر ملایم دور کل سرچ */
+    border-radius: 40px;
+    overflow: hidden; /* این خط باعث می‌شود بوردرهای تیزِ داخلی دیده نشوند */
+}
+
+/* باکس ورودی متن */
+.search-wrapper {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    padding: 0 4px 0 16px;
+}
+
+.search-input {
+    width: 100%;
+    background: transparent !important;
+    border: none !important;
+    color: white !important;
+    font-size: 16px;
+    outline: none !important; /* حذف خط آبی هنگام کلیک */
+    height: 38px;
+    box-shadow: none !important; /* حذف سایه‌های احتمالی */
+}
+
+/* دکمه ذره‌بین */
+.search-btn {
+    background-color: #222 !important;
+    border: none !important; /* حذف بوردر تیز دور دکمه */
+    border-left: 1px solid #333 !important; /* فقط یک خط جداکننده */
+    padding: 0 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    outline: none !important;
+}
+
+.search-btn:hover {
+    background-color: #2a2a2a !important;
+}
+
+/* سفید کردن آیکون سرچ */
+.sidebar-toggle svg {
+    fill: #ffffff !important; /* آیکون کاملاً سفید */
+    width: 20px;
+    height: 20px;
+}
+
+/* دکمه‌های سمت راست */
+.nav-right {
+    gap: 8px;
+    min-width: 180px;
+    justify-content: flex-end;
+}
+
+.sidebar-toggle {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    border-radius: 50%;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+}
+
+.logo-text {
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    font-family: "Roboto", sans-serif;
+}
+
+/* استایل دکمه‌های Auth */
+.btn-link, .btn-signup {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 15px;
+    border-radius: 18px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}s
+
+.btn-link:hover {
+    background: rgba(62, 166, 255, 0.1);
+}
+
+.btn-signup {
+    background: #cc0000;
+    color: white;
+    margin-left: 8px;
+}
+
+/* تنظیمات موبایل */
+@media (max-width: 768px) {
+    .nav-center {
+        display: flex !important; /* برخلاف قبل که none بود، حالا نمایش داده می‌شود */
+        order: 2;
+    }
+
+    .search-form {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    /* در حالت عادی اینپوت مخفی است */
+    .search-wrapper {
+        display: none;
+        position: absolute;
+        top: 50px; /* موقعیت باز شدن اینپوت زیر آیکون */
+        right: 0;
+        width: 250px;
+        background: var(--bg-primary, #ffffff);
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+    }
+
+    /* وقتی کلاس active به فرم اضافه شود */
+    .search-form.active .search-wrapper {
+        display: block;
+    }
+
+    .search-btn {
+        display: flex !important;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        outline: none;
+    }
+}
+
+/* تنظیمات دسکتاپ */
+@media (min-width: 769px) {
+    .search-wrapper {
+        display: block !important;
+    }
+
+    .search-btn {
+        display: none; /* در دسکتاپ آیکون تکی لازم نیست، اینپوت باز است */
+    }
+
+    .search-input {
+        display: block;
+        width: 400px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .desktop-auth {
+        display: none;
+    !important;
+    }
+}

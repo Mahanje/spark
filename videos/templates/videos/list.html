@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Videos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/videos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    {% if query %}
+        <div class="search-results-header">
+            <h2>Results for "{{ query }}"</h2>
+        </div>
+    {% endif %}
+
+    {% if videos %}
+        <div class="video-grid">
+            {% for video in videos %}
+                <a href="{% url 'videos:detail' video.id %}" class="video-card">
+                    <div class="video-thumbnail">
+                        {% if video.thumbnail_url %}
+                          <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}">
+                        {% else %}
+                          <img src="{% static 'images/images (1).png' %}" alt="No thumbnail">
+                        {% endif %}
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">{{ video.title }}</h3>
+                        <p class="video-meta">{{ video.user.username }} | {{ video.views }} views</p>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h2>No videos found</h2>
+            <p>Try a different search term.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

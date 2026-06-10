@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ channel_user.username }}'s Channel - Spark{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/variables.css' %}">
+<link rel="stylesheet" href="{% static 'css/videos.css' %}">
+<link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+<link rel="stylesheet" href="{% static 'css/channel.css' %}">
+<link rel="stylesheet" href="{% static 'css/comment.css' %}">
+
+
+{% endblock %}
+
+{% block content %}
+<div class="channel-header">
+
+
+    <div class="channel-info">
+        {% if channel_user.profile.avatar_url %}
+        <img src="{{ channel_user.profile.avatar_url }}" class="channel-avatar" alt="{{ channel_user.username }}">
+        {% else %}
+        <div class="channel-avatar">{{ channel_user.username|slice:":1"|upper }}</div>
+        {% endif %}
+
+        <div class="channel-text">
+            <h2>{{ channel_user.username }}</h2>
+            <p id="sub-count">{{ sub_count }} Subscribers</p>
+        </div>
+    </div>
+
+    <div class="channel-actions">
+        {% if request.user.is_authenticated %}
+        {% if request.user == channel_user %}
+        <a href="{% url 'accounts:profile' %}" class="edit-btn">Edit Profile</a>
+        {% else %}
+        <button id="subscribe-btn-channel"
+                class="subscribe-btn {% if is_subscribed %}active{% endif %}"
+                onclick="toggleSubscribeChannel('{{ channel_user.username }}')">
+            {% if is_subscribed %}Subscribed{% else %}Subscribe{% endif %}
+        </button>
+        {% endif %}
+        {% else %}
+        <a href="{% url 'accounts:login' %}" class="subscribe-btn">Subscribe</a>
+        {% endif %}
+
+        <button class="dots-btn" onclick="toggleChannelMenu()">
+            ⋮
+        </button>
+
+        <div id="channelMenu" class="channel-menu">
+
+            <button class="report-btn"
+                    data-type="user"
+                    data-id="{{ channel_user.id }}"
+                    style="color: white; !important;">
+                Report
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+
+<div class="channel-videos-section">
+    <h3>Videos</h3>
+    <div class="video-grid">
+        {% for video in videos %}
+        <a href="{% url 'videos:detail' video.id %}" class="video-card">
+            <div class="video-thumbnail">
+                {% if video.thumbnail_url %}
+                <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}" loading="lazy">
+
+                {% else %}
+
+                <img src="{% static 'images/images (1).png' %}" alt="No thumbnail" loading="lazy">
+                {% endif %}
+                {# <span class="play-icon">▶️</span> #}
+            </div>
+            <div class="video-info">
+                <h3 class="video-title">{{ video.title }}</h3>
+                <p class="video-meta">{{ video.views }} views • {{ video.created_at|timesince }} ago</p>
+            </div>
+        </a>
+        {% empty %}
+        <div class="empty-state">
+            <span style="font-size: 4rem;">🎬</span>
+            <h2>No Videos Yet</h2>
+            <p>This channel hasn't uploaded any content yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content%}
+
+{% block extra_js %}
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    function toggleSubscribeChannel(username) {
+        const csrf = getCookie('csrftoken');
+
+        // ساخت URL دینامیک برای toggle_subscribe
+        const url = "{% url 'accounts:toggle_subscribe' 'PLACEHOLDER' %}"
+            .replace('PLACEHOLDER', encodeURIComponent(username));
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+                "X-Requested-With": "XMLHttpRequest", // برای اینکه سرور بفهمه درخواست AJAX هست
+            },
+            credentials: "same-origin", // برای ارسال کوکی ها (CSRF و Session)
+        })
+            .then(async (response) => {
+                const contentType = response.headers.get("content-type") || "";
+                if (!response.ok) {
+                    // اگر پاسخ خطا بود (مثلا 404, 500)
+                    const text = await response.text();
+                    console.error(`HTTP Error: ${response.status}`, text.slice(0, 300));
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                if (!contentType.includes("application/json")) {
+                    // اگر پاسخ JSON نبود
+                    const text = await response.text();
+                    console.error(`Unexpected Content-Type: ${contentType}`, text.slice(0, 300));
+                    throw new Error(`Expected JSON but got: ${contentType}`);
+                }
+                return response.json(); // پارس کردن JSON
+            })
+            .then(data => {
+                // پردازش پاسخ موفق
+                if (data.success) {
+                    const btn = document.getElementById('subscribe-btn-channel');
+                    const countElem = document.getElementById('sub-count');
+
+                    const isSubscribed = data.subscribed; // وضعیت جدید سابسکرایب (true/false)
+                    const subCount = data.count; // تعداد جدید سابسکرایبرها
+
+                    // آپدیت متن و کلاس دکمه سابسکرایب
+                    if (btn) {
+                        btn.textContent = isSubscribed ? 'Subscribed' : 'Subscribe';
+                        btn.classList.toggle('active', isSubscribed); // اضافه/حذف کلاس active
+                    }
+                    // آپدیت تعداد سابسکرایبرها
+                    if (countElem) {
+                        countElem.textContent = subCount + " Subscribers";
+                    }
+                } else {
+                    // اگر سرور خطا را در JSON برگرداند
+                    alert("Error: " + (data.error || "Subscription update failed. Please try again."));
+                }
+            })
+            .catch(err => {
+                // مدیریت خطاهای شبکه یا پارس کردن
+                console.error("toggleSubscribeChannel error:", err);
+                alert("An error occurred while updating subscription. Please check the console for details.");
+            });
+    }
+
+    function toggleChannelMenu() {
+        const menu = document.getElementById("channelMenu");
+
+        if (menu.style.display === "block") {
+            menu.style.display = "none";
+        } else {
+            menu.style.display = "block";
+        }
+    }
+
+    let reportChannelId = null;
+
+</script>
+{% endblock %}
+

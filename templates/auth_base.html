@@ -1,0 +1,89 @@
+{% load static %}
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Spark{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e50914'/%3E%3Cpath d='M25 20 L45 32 L25 44 Z' fill='white'/%3E%3C/svg%3E">
+
+
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+</head>
+
+<body class="auth-layout">
+
+
+<header class="main-navbar">
+
+    <div class="nav-left">
+
+<!--        <button class="menu-btn" id="sidebarToggle">-->
+<!--            <svg viewBox="0 0 24 24">-->
+<!--                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path>-->
+<!--            </svg>-->
+<!--        </button>-->
+
+        <a href="{% url 'videos:list' %}" class="logo-container">
+
+            <svg viewBox="0 0 24 24" width="32" height="32">
+                <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77.42-1.56.42-4.81.42-4.81s0-3.25-.42-4.81z"
+                      fill="#FF0000"></path>
+                <path d="M10 9 l6 3 -6 3 z" fill="#FFF"></path>
+            </svg>
+
+            <span class="logo-text">Spark</span>
+
+        </a>
+
+    </div>
+
+
+    <div class="nav-center">
+        <form class="search-form" action="/search/" method="get">
+            <div class="search-wrapper">
+                <input type="text" name="q" placeholder="Search" class="search-input">
+            </div>
+            <button type="submit" class="search-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z"></path>
+                </svg>
+            </button>
+        </form>
+    </div>
+
+
+    <div class="nav-right desktop-auth">
+
+        {% if user.is_authenticated %}
+
+        <span class="user-name">{{ user.username }}</span>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+
+        {% else %}
+
+        <a href="{% url 'accounts:login' %}" class="btn-link">Sign In</a>
+        <a href="{% url 'accounts:register' %}" class="btn-signup">Sign Up</a>
+
+        {% endif %}
+
+    </div>
+
+</header>
+
+
+        {% block content %}
+        {% endblock %}
+
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+{% load static %}
+
+<div class="table-controls">
+
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+
+<label>Show</label>
+
+<select class="per-page-select">
+
+<option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+<option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+<option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+<option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+
+</select>
+
+<span>per page</span>
+
+</div>
+
+
+<div class="pagination">
+
+<div class="pagination-left">
+
+{% if page_obj.has_previous %}
+<a class="page-btn"
+href="?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}{% if query %}&q={{ query }}{% endif %}">
+Prev
+</a>
+{% else %}
+<span class="page-btn disabled">Prev</span>
+{% endif %}
+
+</div>
+
+
+<div class="pagination-center">
+
+{% for num in page_obj.paginator.page_range %}
+
+{% if page_obj.number == num %}
+<span class="page-number active">{{ num }}</span>
+
+{% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+
+<a class="page-number"
+href="?page={{ num }}&per_page={{ per_page }}{% if query %}&q={{ query }}{% endif %}">
+{{ num }}
+</a>
+
+{% endif %}
+
+{% endfor %}
+
+</div>
+
+
+<div class="pagination-right">
+
+{% if page_obj.has_next %}
+<a class="page-btn"
+href="?page={{ page_obj.next_page_number }}&per_page={{ per_page }}{% if query %}&q={{ query }}{% endif %}">
+Next
+</a>
+{% else %}
+<span class="page-btn disabled">Next</span>
+{% endif %}
+
+</div>
+
+</div>
+
+
+
+<script>
+
+document.querySelectorAll(".per-page-select").forEach(select => {
+
+select.addEventListener("change", function(){
+
+const perPage = this.value
+
+const url = new URL(window.location.href)
+
+url.searchParams.set("per_page", perPage)
+url.searchParams.set("page", 1)
+
+window.location.href = url
+
+})
+
+})
+
+</script>

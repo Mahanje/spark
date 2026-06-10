@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .history-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        color: #eaeaea;
+    }
+    .history-title {
+        margin-bottom: 24px;
+        color: white;
+        font-size: 1.8rem;
+    }
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .history-item {
+        background: #1c1c1c;
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: background 0.2s;
+    }
+    .history-item:hover {
+        background: #252525;
+    }
+    .thumb-link {
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+    .thumb-wrapper {
+        width: 160px;
+        aspect-ratio: 16 / 9;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #333;
+        position: relative;
+    }
+    .thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .history-info {
+        flex-grow: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+    .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #444;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+    .video-title {
+        font-weight: 700;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1.1rem;
+    }
+    .video-subtext {
+        color: #aaa;
+        font-size: 13px;
+    }
+    .event-badge {
+        font-size: 14px;
+        margin-top: 4px;
+    }
+
+    @media (max-width: 600px) {
+        .history-container { padding: 12px; }
+        .history-item {
+            flex-direction: column; / عکس می‌رود بالا، متن می‌آید پایین /
+            gap: 12px;
+            padding: 12px;
+        }
+        .thumb-wrapper {
+            width: 100%; / عکس تمام عرض صفحه موبایل را می‌گیرد /
+            height: auto;
+        }
+        .thumb-link { width: 100%; }
+        .video-title { white-space: normal; } / در موبایل اجازه بده عنوان در دو خط بیاید */
+    }
+</style>
+
+<div class="history-container">
+    <h1 class="history-title">History</h1>
+
+    {% if events %}
+    <div class="history-list">
+        {% for e in events %}
+        <div class="history-item">
+            <!-- Thumbnail -->
+            <a href="{% url 'videos:detail' e.video.id %}" class="thumb-link">
+                <div class="thumb-wrapper">
+                    {% if e.video.thumbnail_url %}
+                    <img src="{{ e.video.thumbnail_url }}" alt="{{ e.video.title }}" class="thumb-img">
+                    {% else %}
+                    <img src="{% static 'images/images (1).png' %}" alt="No thumbnail" class="thumb-img">
+                    {% endif %}
+                </div>
+            </a>
+
+            <!-- Info -->
+            <div class="history-info">
+                <div class="meta-row">
+                    <div class="avatar">
+                        {% if e.video.user.profile.avatar_url %}
+                        <img src="{{ e.video.user.profile.avatar_url }}" alt="{{ e.video.user.username }}" style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                        {{ e.video.user.username|slice:":1"|upper }}
+                        {% endif %}
+                    </div>
+                    <div style="min-width:0; flex-grow: 1;">
+                        <div class="video-title">{{ e.video.title }}</div>
+                        <div class="video-subtext">{{ e.video.user.username }} • {{ e.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+
+                <!-- Activity Status -->
+                <div class="event-badge">
+
+{% if e.type == "comment" %}
+                        <span style="font-weight:700; color:#ccc;">Commented:</span>
+                        <span style="color:#ddd;">{{ e.text|truncatechars:100 }}</span>
+                    {% elif e.type == "like" %}
+                        <span style="font-weight:700; color:#2ecc71;">Liked</span> this video
+                    {% elif e.type == "dislike" %}
+                        <span style="font-weight:700; color:#e74c3c;">Disliked</span> this video
+                    {% else %}
+                        <span style="font-weight:700;">Activity:</span> {{ e.type|capfirst }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:#aaa;">No history yet. Like or comment on videos and it will appear here.</p>
+    {% endif %}
+</div>
+{% endblock %}
+

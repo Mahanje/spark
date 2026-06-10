@@ -1,0 +1,63 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %} - Comments{% endblock %}
+
+{% block content %}
+
+<h1>Manage Comments</h1>
+
+<div style="margin-bottom:15px;">
+
+    <form method="get">
+
+    </form>
+
+</div>
+
+<table class="table">
+
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Video</th>
+        <th>Comment</th>
+        <th>Date</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    {% for comment in comments %}
+
+    <tr>
+        <td>{{ comment.id }}</td>
+        <td>{{ comment.user.username }}</td>
+        <td>{{ comment.video.title }}</td>
+        <td>{{ comment.text }}</td>
+        <td>{{ comment.created_at }}</td>
+        <td>
+            <a href="{% url 'dashboard:delete_comment' comment.id %}" class="delete-link">
+                Delete
+            </a>
+        </td>
+    </tr>
+
+    {% empty %}
+
+    <tr>
+        <td colspan="5">No comments found</td>
+    </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% include "components/pagination.html" %}
+
+{% endblock %}
+
+
+

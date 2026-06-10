@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- استایل اختصاصی برای مخفی کردن اسکرول‌بار زشت -->
+<link rel="stylesheet" href="{% static 'css/subscribe.css' %}">
+<link rel="stylesheet" href="{% static 'css/video.css' %}">
+
+<div class="subscriptions-page" style="max-width: 1100px; margin: 0 auto; padding: 20px;">
+
+    <h1 style="margin-bottom: 20px; font-weight: 800;">Subscriptions</h1>
+
+    <!-- 🟢 کانال‌ها (بخش اصلاح شده به سبک اینستاگرام) -->
+    <div class="subs-channels no-scrollbar"
+         style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 10px; -webkit-overflow-scrolling: touch;">
+
+        {% for u in channels %}
+        <a href="{% url 'videos:channel' u.username %}"
+           class="channel-item"
+           style="text-decoration: none; color: inherit; flex: 0 0 auto;">
+            <div style="width: 90px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+
+                <!-- دایره پروفایل -->
+                <div class="avatar-circle"
+                     style="width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background:#333; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; padding: 2px; background-clip: content-box; border: 2px solid #444;">
+                    {% if u.profile.avatar_url %}
+                    <img src="{{ u.profile.avatar_url }}"
+                         alt="{{ u.username }}"
+                         style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">
+                    {% else %}
+                    {{ u.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+
+                <!-- نام کاربر -->
+                <div style="font-size: 12px; font-weight: 500; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #ddd;">
+                    {{ u.username }}
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <p style="color: #666; padding-left: 10px;">You haven’t subscribed to any channels yet.</p>
+        {% endfor %}
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #222; margin: 10px 0 25px 0;">
+
+    <!-- 🔴 ویدیوها (پایین) -->
+    <h2 style="margin: 0 0 16px; font-weight: 700;">Latest videos</h2>
+
+    <div class="video-card"
+         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+
+        {% for video in videos %}
+        <a href="{% url 'videos:detail' video.id %}"
+           style="text-decoration: none; color: inherit;">
+            <div style="background:#181818; border-radius: 12px; overflow: hidden; transition: transform 0.2s;"
+                 onmouseover="this.style.transform='translateY(-5px)'"
+                 onmouseout="this.style.transform='translateY(0)'">
+
+                <div style="aspect-ratio: 16/9; background:#000; position: relative;">
+                    {% if video.display_thumbnail_url %}
+                    <img src="{{ video.display_thumbnail_url }}"
+                         alt="{{ video.title }}"
+                         style="width:100%; height:100%; object-fit:cover; display:block;"
+                         onerror="this.onerror=null;this.src='{% static 'images/images (1).png' %}';">
+                    {% else %}
+                    <img src="{% static 'images/images (1).png' %}"
+                         alt="No thumbnail"
+                         style="width:100%; height:100%; object-fit:cover; display:block;">
+                    {% endif %}
+                </div>
+
+                <div style="paddi
+
+ng: 12px;">
+                    <div style="display:flex; gap:12px; align-items:flex-start;">
+
+                        <!-- آواتار کوچک کنار ویدیو -->
+                        <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background:#444; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; flex: 0 0 auto;">
+                            {% if video.user.profile.avatar_url %}
+                            <img src="{{ video.user.profile.avatar_url }}"
+                                 alt="{{ video.user.username }}"
+                                 style="width:100%; height:100%; object-fit:cover;">
+                            {% else %}
+                            {{ video.user.username|slice:":1"|upper }}
+                            {% endif %}
+                        </div>
+
+                        <div style="min-width: 0;">
+                            <div style="font-weight: 600; line-height: 1.4; margin-bottom: 4px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ video.title }}
+                            </div>
+
+                            <div style="color:#aaa; font-size: 12px;">
+                                {{ video.user.username }}
+                            </div>
+                            <div style="color:#888; font-size: 12px;">
+                                {{ video.views }} views • {{ video.created_at|date:"M d, Y" }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </a>
+        {% empty %}
+        <p style="color: #666;">No videos from your subscriptions yet.</p>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

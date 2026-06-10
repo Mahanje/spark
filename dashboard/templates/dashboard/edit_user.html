@@ -1,0 +1,58 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<h1>Edit User</h1>
+
+<div class="center-wrapper">
+
+    <div class="form-container">
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" value="{{ user_obj.username }}">
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ user_obj.email }}">
+    </div>
+
+    <div class="form-check">
+        <label>
+            <input type="checkbox" name="is_staff"
+            {% if user_obj.is_staff %}checked{% endif %}>
+            Staff User
+        </label>
+    </div>
+
+    <div class="form-check">
+        <label>
+            <input type="checkbox" name="is_active"
+            {% if user_obj.is_active %}checked{% endif %}>
+            Active Account
+        </label>
+    </div>
+
+    <div class="form-actions">
+
+        <button type="submit" class="btn btn-save">
+            Save Changes
+        </button>
+
+        <a href="{% url 'dashboard:users' %}" class="btn btn-cancel">
+            Cancel
+        </a>
+
+    </div>
+
+</form>
+</div>
+
+
+</div>
+
+{% endblock %}

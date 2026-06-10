@@ -1,0 +1,312 @@
+{% load static %}
+
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Spark{% endblock %}</title>
+
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+
+
+    <link rel="icon"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e50914'/%3E%3Cpath d='M25 20 L45 32 L25 44 Z' fill='white'/%3E%3C/svg%3E">
+
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+
+
+    {% block extra_css %}{% endblock %}
+
+</head>
+
+<body>
+
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<header class="main-navbar">
+
+    <div class="nav-left">
+
+        <button class="sidebar-toggle" id="sidebarToggle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18M3 12h18M3 18h18"/>
+            </svg>
+        </button>
+
+        <a href="{% url 'videos:list' %}" class="logo-container">
+
+            <svg viewBox="0 0 24 24" width="32" height="32">
+                <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77.42-1.56.42-4.81.42-4.81s0-3.25-.42-4.81z"
+                      fill="#FF0000"></path>
+                <path d="M10 9 l6 3 -6 3 z" fill="#FFF"></path>
+            </svg>
+
+            <span class="logo-text">Spark</span>
+
+        </a>
+
+    </div>
+
+
+    <div class="nav-center">
+        <form class="search-form" action="/search/" method="get" id="searchForm">
+            <div class="search-wrapper" id="searchWrapper">
+                <input type="text" name="q" placeholder="Search" class="search-input" id="searchInput">
+            </div>
+            <button type="button" class="search-btn" id="mobileSearchBtn">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor"
+                          d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z"></path>
+                </svg>
+            </button>
+        </form>
+    </div>
+
+
+    <div class="nav-right desktop-auth">
+
+        {% if user.is_authenticated %}
+
+        <span class="user-name">{{ user.username }}</span>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-signup">Logout</button>
+        </form>
+
+        {% else %}
+
+        <a href="{% url 'accounts:login' %}" class="btn-link">Sign In</a>
+        <a href="{% url 'accounts:register' %}" class="btn-signup">Sign Up</a>
+
+        {% endif %}
+
+    </div>
+
+</header>
+
+
+<aside class="sidebar" id="sidebar">
+
+    <a href="{% url 'videos:list' %}" class="sidebar-item active">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>
+        </svg>
+        <span>Home</span>
+    </a>
+
+
+    {% if user.is_authenticated %}
+
+    <a href="{% url 'accounts:subscriptions' %}" class="sidebar-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 15l5-3-5-3v6z"/>
+            <path d="M4 10h16M7 7h10M10 4h4"/>
+            <rect x="2" y="10" width="20" height="11" rx="2"/>
+        </svg>
+        <span>Subscriptions</span>
+    </a>
+
+    <a href="{% url 'videos:channel' user.username %}" class="sidebar-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <span>Your Channel</span>
+    </a>
+
+    <a href="{% url 'accounts:profile' %}" class="sidebar-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M5 20c2.5-4 11.5-4 14 0"/>
+        </svg>
+        <span>Profile</span>
+    </a>
+
+    <a href="{% url 'videos:upload' %}" class="sidebar-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="7" width="14" height="10" rx="3"/>
+            <path d="M17 10l4 -3v10l-4 -3z"/>
+            <path d="M10 9v6"/>
+            <path d="M7 12h6"/>
+        </svg>
+        <span>Upload</span>
+    </a>
+
+    <a href="{% url 'accounts:history' %}" class="sidebar-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 8v4l3 3"/>
+            <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/>
+        </svg>
+        <span>History</span>
+    </a>
+
+    {% endif %}
+
+
+    <!-- این بخش انتهای سایدبار است -->
+    <div class="sidebar-footer-auth">
+        {% if user.is_authenticated %}
+        <div class="user-info-mobile">
+            <span class="user-name-mobile">{{ user.username }}</span>
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="mobile-logout-btn">Logout</button>
+            </form>
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <form method="post" action="{% url 'accounts:login' %}">
+        {% csrf_token %}
+        <button type="submit" class="mobile-logout-btn">Login</button>
+    </form>
+    <form method="post" action="{% url 'accounts:register' %}">
+        {% csrf_token %}
+        <button type="submit" class="mobile-logout-btn">Sign Up</button>
+    </form>
+
+    {% endif %}
+
+    </div>
+
+</aside>
+
+
+<div class="main-content-wrapper">
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+<script src="{% static 'report.js' %}"></script>
+
+<script>
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+
+            navigator.serviceWorker.register('/sw.js')
+                .then(function () {
+                    console.log('SW Registered');
+                })
+                .catch(function (err) {
+                    console.log('SW Failed', err);
+                });
+
+        });
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const menuBtn = document.getElementById('sidebarToggle');
+        const overlay = document.getElementById('sidebarOverlay');
+        const body = document.body;
+
+        function toggleSidebar() {
+
+            if (window.innerWidth <= 768) {
+                body.classList.toggle('sidebar-open');
+            } else {
+                body.classList.toggle('sidebar-closed');
+            }
+
+        }
+
+        if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
+
+        if (overlay) overlay.addEventListener('click', () => body.classList.remove('sidebar-open'));
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                body.classList.remove('sidebar-open');
+            }
+        });
+    });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchBtn = document.getElementById("mobileSearchBtn");
+        const searchForm = document.getElementById("searchForm");
+        const searchInput = document.getElementById("searchInput");
+
+        if (!searchBtn || !searchForm) return;
+
+        searchBtn.addEventListener("click", function (e) {
+            if (window.innerWidth <= 768) {
+                // اگر فرم بسته است، آن را باز کن
+                if (!searchForm.classList.contains("active")) {
+                    e.preventDefault();
+                    searchForm.classList.add("active");
+                    setTimeout(() => searchInput.focus(), 150);
+                }
+                // اگر فرم باز است و اینپوت مقدار دارد، جستجو کن
+                else if (searchInput.value.trim() !== "") {
+                    searchForm.submit();
+                }
+                // اگر باز است ولی خالی، ببندش
+                else {
+                    searchForm.classList.remove("active");
+                }
+            }
+        });
+
+        // بستن سرچ در صورت کلیک به بیرون
+        document.addEventListener("click", function (e) {
+            if (!searchForm.contains(e.target) && window.innerWidth <= 768) {
+                searchForm.classList.remove("active");
+            }
+        });
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+
+
+<div id="reportModal" class="report-modal" style="display:none;">
+
+    <div class="report-modal-content">
+
+        <h3>Report</h3>
+
+        <select id="report-reason">
+            <option value="spam">Spam</option>
+            <option value="abuse">Abusive Content</option>
+            <option value="copyright">Copyright</option>
+            <option value="other">Other</option>
+        </select>
+
+        <textarea id="report-description"
+                  placeholder="Additional details (optional)"></textarea>
+
+        <div class="report-actions">
+            <button onclick="submitReport()">Submit</button>
+            <button onclick="closeReportModal()">Cancel</button>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
