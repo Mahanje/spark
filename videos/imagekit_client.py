@@ -8,9 +8,9 @@ from imagekitio import ImageKit
 # ---------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------
-PUBLIC_KEY = os.getenv("IMAGEKIT_PUBLIC_KEY", "public_OxsoMW+PDdNXEGzW2v4Qf+XtNoM=")
-PRIVATE_KEY = os.getenv("IMAGEKIT_PRIVATE_KEY", "private_LvVmnvIy97R6mYyEfPQ//stH3Co=")
-URL_ENDPOINT = os.getenv("IMAGEKIT_URL_ENDPOINT", "https://ik.imagekit.io/qp5qzh7np")
+PUBLIC_KEY = os.getenv("IMAGEKIT_PUBLIC_KEY", "public_UNlCQYIJe+NfBKM3szHVOmyoGdU=")
+PRIVATE_KEY = os.getenv("IMAGEKIT_PRIVATE_KEY", "private_NG6UFakRNT9CBJ6MrmW3oUrN88M=")
+URL_ENDPOINT = os.getenv("IMAGEKIT_URL_ENDPOINT", "https://ik.imagekit.io/dom5ifxp4")
 
 
 # ---------------------------------------------------------------------
