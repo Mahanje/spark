@@ -37,6 +37,11 @@
             {% endif %}
 
         </div>
+
+        <div class="profile-handle">@{{ request.user.username }}</div>
+
+    </div>
+
     <form method="post" enctype="multipart/form-data" class="auth-form">
         {% csrf_token %}
 
