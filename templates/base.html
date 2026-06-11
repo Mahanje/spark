@@ -72,6 +72,26 @@
         </form>
     </div>
 
+    <div class="mobile-search-overlay" id="mobileSearchOverlay">
+        <div class="mobile-search-header">
+
+            <button type="button" id="closeSearchBtn" class="close-search-btn">
+                ✕
+            </button>
+
+            <form action="/search/" method="get" class="mobile-search-form">
+                <input
+                        type="text"
+                        name="q"
+                        placeholder="Search"
+                        class="mobile-search-input"
+                        id="mobileSearchInput"
+                >
+            </form>
+
+        </div>
+    </div>
+
 
     <div class="nav-right desktop-auth">
 
@@ -277,6 +297,34 @@
             }
         });
     });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const openBtn = document.getElementById("mobileSearchBtn");
+        const closeBtn = document.getElementById("closeSearchBtn");
+
+        const overlay = document.getElementById("mobileSearchOverlay");
+        const input = document.getElementById("mobileSearchInput");
+
+        openBtn.addEventListener("click", () => {
+
+            if (window.innerWidth <= 768) {
+
+                overlay.classList.add("active");
+
+                setTimeout(() => {
+                    input.focus();
+                }, 200);
+            }
+        });
+
+        closeBtn.addEventListener("click", () => {
+            overlay.classList.remove("active");
+        });
+
+    });
+
 </script>
 
 {% block extra_js %}{% endblock %}

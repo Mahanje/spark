@@ -174,3 +174,80 @@
         display: none !important;
     }
 }
+
+
+
+/* فقط موبایل */
+.mobile-search-overlay {
+    position: fixed;
+    inset: 0;
+    background: #0f0f0f;
+    z-index: 99999;
+
+    display: flex;
+    align-items: flex-start;
+
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+
+    transition: all .25s ease;
+}
+
+.mobile-search-overlay.active {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.mobile-search-header {
+    width: 100%;
+    height: 56px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 0 16px;
+    box-sizing: border-box;
+
+    border-bottom: 1px solid #222;
+}
+
+.close-search-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.mobile-search-form {
+    flex: 1;
+}
+
+.mobile-search-input {
+    width: 100%;
+    height: 40px;
+
+    border: none;
+    outline: none;
+
+    background: #121212;
+    color: #fff;
+
+    padding: 0 16px;
+    border-radius: 20px;
+
+    font-size: 16px;
+}
+
+.mobile-search-input::placeholder {
+    color: #aaa;
+}
+
+@media (min-width: 769px) {
+    .mobile-search-overlay {
+        display: none !important;
+    }
+}
