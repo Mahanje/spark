@@ -95,3 +95,10 @@
 .file-input-hidden{
     display:none;
 }
+
+
+.profile-handle{
+    margin-top: 18px;
+    font-size: 22px;
+    font-weight: 800;
+}
