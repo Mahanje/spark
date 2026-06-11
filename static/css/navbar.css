@@ -162,7 +162,8 @@
         padding: 10px;
         z-index: 9999;
     }
-/*search*/
+
+    /*search*/
     .search-form.active .search-box {
         display: flex;
     }
@@ -174,7 +175,6 @@
         display: none !important;
     }
 }
-
 
 
 /* فقط موبایل */
@@ -250,4 +250,17 @@
     .mobile-search-overlay {
         display: none !important;
     }
+}
+
+
+@media (max-width: 768px) {
+
+    .search-wrapper {
+        display: none !important;
+    }
+
+    .search-btn {
+        display: flex !important;
+    }
+
 }
