@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from core.models import Report
 
+from django.http import HttpResponse
+
+
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
@@ -204,7 +207,6 @@ def resolve_report(request, pk):
     return redirect('dashboard:report_list')
 
 
-
 @login_required
 def report_channel(request, user_id):
     channel_user = get_object_or_404(User, id=user_id)
@@ -224,3 +226,18 @@ def report_channel(request, user_id):
         return JsonResponse({"status": "reported"})
 
     return JsonResponse({"error": "invalid"}, status=400)
+
+
+
+
+
+def create_admin(request):
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_superuser(
+            username="admin",
+            email="you@example.com",
+            password="123456789"
+        )
+        return HttpResponse("superuser created")
+
+    return HttpResponse("already exists")
