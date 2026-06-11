@@ -5,183 +5,125 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
-<style>
-  .profile-page{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-  }
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
 
-  .profile-top{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    margin-bottom: 18px;
-  }
-
-  .profile-avatar,
-  .profile-avatar-fallback{
-    width:96px;
-    height:96px;
-    border-radius:50%;
-    object-fit:cover;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border: 2px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.06);
-  }
-
-  .profile-avatar{
-    display:block;
-  }
-
-  .profile-avatar-fallback{
-    font-weight:800;
-    font-size: 26px;
-  }
-
-  .profile-handle{
-    margin-top: 10px;
-    font-size: 22px;
-    font-weight: 800;
-  }
-
-  .profile-email{
-    margin-top: 6px;
-    opacity: .8;
-    font-size: 13px;
-  }
-
-  .file-input-hidden{
-    position:absolute;
-    left:-9999px;
-    width:1px;
-    height:1px;
-    overflow:hidden;
-  }
-
-  .btn-upload{
-    display:block;
-    width:100%;
-    padding:12px 14px;
-    border-radius:10px;
-    cursor:pointer;
-    text-align:center;
-    user-select:none;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.10);
-    color: #fff;
-    font-weight: 600;
-  }
-
-  .btn-upload:hover{
-    background: rgba(255,255,255,0.12);
-  }
-
-  .file-name{
-    margin-top: 8px;
-    font-size: 12px;
-    opacity: .75;
-    text-align:center;
-    word-break: break-all;
-  }
-</style>
 {% endblock %}
 
 {% block content %}
 <div class="auth-container profile-page">
-  <div class="auth-header">
-    <h1>Your Profile</h1>
-    <p>Update your info and upload an avatar.</p>
-  </div>
-
-  <div class="profile-top">
-    {% if profile_obj.avatar_url %}
-      <img class="profile-avatar" src="{{ profile_obj.avatar_url }}" alt="avatar">
-    {% else %}
-      <div class="profile-avatar-fallback">
-        {{ request.user.username|slice:":1"|upper }}
-      </div>
-    {% endif %}
-
-    <div class="profile-handle">@{{ request.user.username }}</div>
-    {% if request.user.email %}
-      <div class="profile-email">{{ request.user.email }}</div>
-    {% endif %}
-  </div>
-
-  <form method="post" enctype="multipart/form-data" class="auth-form">
-    {% csrf_token %}
-
-    {% if u_form.errors or p_form.errors %}
-      <ul class="error-list">
-        {% for field in u_form %}
-          {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
-        {% endfor %}
-        {% for field in p_form %}
-          {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
-        {% endfor %}
-        {% for error in u_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
-        {% for error in p_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
-      </ul>
-    {% endif %}
-
-    <div class="form-group">
-      <label for="{{ u_form.username.id_for_label }}">Username</label>
-      {{ u_form.username }}
+    <div class="auth-header">
+        <h1>Your Profile</h1>
+        <p>Update your info and upload an avatar.</p>
     </div>
 
-    {% if u_form.email %}
-      <div class="form-group">
-        <label for="{{ u_form.email.id_for_label }}">Email</label>
-        {{ u_form.email }}
-      </div>
-    {% endif %}
+    <div class="profile-top">
 
-    <div class="form-group">
-      <label for="id_avatar">Avatar</label>
-      <input
-        type="file"
-        name="avatar"
-        id="id_avatar"
-        accept="image/*"
-        class="file-input-hidden"
-      >
-      <label for="id_avatar" class="btn-upload">Choose Avatar</label>
-      <div id="fileName" class="file-name">No file chosen</div>
-      <div class="help-text">PNG/JPG recommended.</div>
+        <div class="avatar-wrapper">
+
+            {% if profile_obj.avatar_url %}
+            <img
+                    class="profile-avatar"
+                    src="{{ profile_obj.avatar_url }}"
+                    alt="avatar"
+                    id="avatarPreview"
+            >
+            {% else %}
+            <div
+                    class="profile-avatar-fallback"
+                    id="avatarPreview"
+            >
+                {{ request.user.username|slice:":1"|upper }}
+            </div>
+            {% endif %}
+
+            <button type="button" class="avatar-menu-btn" id="avatarMenuBtn">
+                ⋮
+            </button>
+
+        </div>
+
+        <div class="profile-handle">@{{ request.user.username }}</div>
+
+        {% if request.user.email %}
+        <div class="profile-email">{{ request.user.email }}</div>
+        {% endif %}
+
     </div>
 
-    <div class="form-group">
-      <label for="{{ p_form.bio.id_for_label }}">Bio</label>
-      {{ p_form.bio }}
+    <form method="post" enctype="multipart/form-data" class="auth-form">
+        {% csrf_token %}
+
+        {% if u_form.errors or p_form.errors %}
+        <ul class="error-list">
+            {% for field in u_form %}
+            {% for error in field.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+            {% endfor %}
+            {% for field in p_form %}
+            {% for error in field.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+            {% endfor %}
+            {% for error in u_form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+            {% for error in p_form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ u_form.username.id_for_label }}">Username</label>
+            {{ u_form.username }}
+        </div>
+
+        {% if u_form.email %}
+        <div class="form-group">
+            <label for="{{ u_form.email.id_for_label }}">Email</label>
+            {{ u_form.email }}
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <input
+                    type="file"
+                    name="avatar"
+                    id="id_avatar"
+                    accept="image/*"
+                    class="file-input-hidden"
+            >
+        </div>
+
+        <button type="submit" class="btn-submit">Save Changes</button>
+    </form>
+
+    <div class="auth-footer">
+        <a href="{% url 'videos:list' %}">Back to videos</a>
     </div>
-
-    <button type="submit" class="btn-submit">Save Changes</button>
-  </form>
-
-  <div class="auth-footer">
-    <a href="{% url 'videos:list' %}">Back to videos</a>
-  </div>
 </div>
 
 <script>
-  (function(){
-    const input = document.getElementById('id_avatar');
+    document.addEventListener("DOMContentLoaded", function () {
 
-const out = document.getElementById('fileName');
-    if(!input || !out) return;
+        const input = document.getElementById("id_avatar");
 
-    input.addEventListener('change', function(){
-      out.textContent = (this.files && this.files.length)
-        ? this.files[0].name
-        : 'No file chosen';
+        const avatar = document.getElementById("avatarPreview");
+
+        const menuBtn = document.getElementById("avatarMenuBtn");
+
+        function openPicker() {
+            input.click();
+        }
+
+        avatar.addEventListener("click", openPicker);
+
+        menuBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            openPicker();
+        });
+
     });
-  })();
 </script>
 {% endblock %}
