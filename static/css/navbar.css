@@ -264,3 +264,39 @@
     }
 
 }
+
+
+.search-btn {
+    color: #fff !important;
+}
+
+.search-btn svg {
+    color: #fff !important;
+    fill: #fff !important;
+}
+
+@media (max-width: 768px) {
+
+    .nav-right,
+    .desktop-auth,
+    .user-name {
+        display: none !important;
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .nav-center {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end; /* میره سمت راست */
+        padding-right: 0;
+    }
+
+    .search-form {
+        width: auto;
+    }
+
+}
