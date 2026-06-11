@@ -228,16 +228,3 @@ def report_channel(request, user_id):
     return JsonResponse({"error": "invalid"}, status=400)
 
 
-
-
-
-def create_admin(request):
-    if not User.objects.filter(username="admin").exists():
-        User.objects.create_superuser(
-            username="admin",
-            email="you@example.com",
-            password="123456789"
-        )
-        return HttpResponse("superuser created")
-
-    return HttpResponse("already exists")

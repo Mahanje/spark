@@ -14,5 +14,4 @@ urlpatterns = [
     path('reports/', views.report_list, name='report_list'),
     path('reports/<int:pk>/resolve/', views.resolve_report, name='resolve_report'),
     path("channel/<int:user_id>report/", views.report_channel, name="report_channel"),
-    path("create-admin/", views.create_admin, name="create_admin"),
 ]
