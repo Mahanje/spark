@@ -45,7 +45,7 @@
 
 
 .comment:target {
-    background: rgba(255,0,0,.15);
+    background: rgba(255, 0, 0, .15);
     border-left: 4px solid #ff4444;
     padding-left: 10px;
 }
@@ -287,3 +287,21 @@
     opacity: 1;
 }
 
+
+.reply-item {
+    margin-left: 48px;
+    margin-top: 12px;
+    padding-left: 12px;
+    border-left: 2px solid rgba(255, 255, 255, .12);
+}
+
+.reply-btn {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.reply-box {
+    margin-top: 10px;
+}

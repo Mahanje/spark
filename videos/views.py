@@ -178,19 +178,30 @@ def video_vote(request, video_id):
 @require_POST
 def add_comment(request, video_id):
     video = get_object_or_404(Video, id=video_id)
+
     text = request.POST.get('text', '').strip()
+    parent_id = request.POST.get('parent_id')
+
     if not text:
         return JsonResponse({'error': 'Comment text is empty'}, status=400)
 
-    comment = Comment.objects.create(video=video, user=request.user, text=text)
+    parent = None
+
+    if parent_id:
+        parent = Comment.objects.filter(
+            id=parent_id,
+            video=video
+        ).first()
+
+    comment = Comment.objects.create(
+        video=video,
+        user=request.user,
+        text=text,
+        parent=parent
+    )
+
     return JsonResponse({
-        'success': True,
-        'comment': {
-            'username': comment.user.username,
-            'text': comment.text,
-            'created_at': 'Just now',
-            'avatar_letter': comment.user.username[0].upper()
-        }
+        'success': True
     })
 
 
@@ -273,8 +284,6 @@ def delete_comment(request, pk):
 
     except Comment.DoesNotExist:
         return JsonResponse({"error": "Comment not found"}, status=404)
-
-
 
 
 @staff_member_required
