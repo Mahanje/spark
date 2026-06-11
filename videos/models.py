@@ -55,20 +55,14 @@ class Video(models.Model):
 class Comment(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='replies'
-    )
-
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.video.title}"
 
 
 class VideoLike(models.Model):
@@ -90,6 +84,7 @@ class VideoLike(models.Model):
     def __str__(self):
         action = "liked" if self.value == self.LIKE else "disliked"
         return f"{self.user.username} {action} {self.video.title}"
+
 
     def get_absolute_url(self):
         from django.urls import reverse

@@ -30,8 +30,8 @@
 
             </button>
             <div class="menu-dropdown report-btn" id="videoMenuDropdown"
-                 data-type="video"
-                 data-id="{{ video.id }}">
+                data-type="video"
+                data-id="{{ video.id }}">
                 Report
                 <!-- گزینه‌های دیگر -->
             </div>
@@ -145,8 +145,7 @@
         {% endif %}
 
         <div id="comment-list">
-            {% for comment in video.comments.all %}
-            {% if not comment.parent %}
+            {% for comment in video.comments.all reversed %}
 
             <div class="comment-item comment" id="comment-{{ comment.id }}">
 
@@ -205,39 +204,6 @@
                     <div class="comment-text">
                         {{ comment.text }}
                     </div>
-                    <button
-                            class="reply-btn"
-                            onclick="showReplyBox({{ comment.id }})">
-                        Reply
-                    </button>
-                    {% for reply in comment.replies.all %}
-
-                    <div class="reply-item">
-
-                        <strong>{{ reply.user.username }}</strong>
-
-                        <div>
-                            {{ reply.text }}
-                        </div>
-
-                    </div>
-
-                    {% endfor %}
-                    <div
-                            id="reply-box-{{ comment.id }}"
-                            class="reply-box"
-                            style="display:none;">
-
-    <textarea
-            id="reply-text-{{ comment.id }}"
-            placeholder="Write a reply...">
-    </textarea>
-
-                        <button
-                                onclick="submitReply({{ video.id }}, {{ comment.id }})">
-                            Reply
-                        </button>
-                    </div>
 
                 </div>
 
@@ -245,11 +211,11 @@
 
             {% empty %}
             <p id="no-comments">No comments yet. Be the first to comment!</p>
-            {% endif %}
             {% endfor %}
         </div>
     </div>
 </div>
+
 
 
 <div id="reportModal" class="report-modal">
@@ -430,44 +396,33 @@
 
     function deleteComment(id) {
 
-        if (!confirm("Delete this comment?")) return
+            if (!confirm("Delete this comment?")) return
 
-        fetch(`/comment/${id}/delete/`, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken")
-            }
-        })
-            .then(() => location.reload())
+            fetch(`/comment/${id}/delete/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                }
+            })
+                .then(() => location.reload())
 
-    }
-
-
-    function removeComment(id) {
-
-        if (!confirm("Remove this comment?")) return
-
-        fetch(`/comment/${id}/remove/`, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken")
-            }
-        })
-            .then(() => location.reload())
-
-    }
+        }
 
 
-    function showReplyBox(commentId) {
 
-        const box =
-            document.getElementById(`reply-box-${commentId}`);
+        function removeComment(id) {
 
-        box.style.display =
-            box.style.display === 'none'
-                ? 'block'
-                : 'none';
-    }
+            if (!confirm("Remove this comment?")) return
+
+            fetch(`/comment/${id}/remove/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                }
+            })
+                .then(() => location.reload())
+
+        }
 </script>
 
 
