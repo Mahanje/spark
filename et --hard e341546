@@ -1,0 +1,41 @@
+[33maad1119[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m video_page
+[33me341546[m no file over 10mb
+[33m33e493b[m css problem
+[33ma97b171[m css problem
+[33mc73fbd9[m history css
+[33m8e9fb6a[m debug=false
+[33m091a784[m change keys
+[33mce97e3a[m cancel reply comment
+[33me691bfd[m reply comment
+[33m1a8a18a[m admin
+[33m9a93452[m admin
+[33m9b3b729[m profile style
+[33mfa16224[m profile style
+[33m3310beb[m profile style
+[33m521c8c0[m profile style
+[33m4c551d0[m profile style
+[33m6df411b[m profile style
+[33ma44e3cf[m sidebar style
+[33md81fa2c[m sidebar style
+[33m5620123[m style search
+[33mf074167[m style search
+[33m9046b18[m style navbar
+[33me68ca63[m sign up and sign in hide in mobile
+[33m9f60514[m test
+[33m155972f[m sql
+[33m2fb2d3d[m desktop search
+[33m089d74c[m namad
+[33m9e5e694[m search
+[33m914bd4a[m search
+[33mee9ec48[m sql
+[33m22810ed[m imagekit
+[33m5e2060b[m pillow install
+[33md059965[m migration
+[33m0f4b9f9[m debug true
+[33mcbb5ba6[m fix allowed hosts
+[33ma39bf6c[m add imagekitio dependency
+[33mb60773c[m add whitenoise
+[33md48dae2[m fix missing django
+[33md800022[m add gunicorn
+[33mdb2df2c[m add procfile
+[33m19cd70b[m first commit spark project

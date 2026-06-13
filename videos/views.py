@@ -296,3 +296,28 @@ def remove_comment(request, pk):
 
     except Comment.DoesNotExist:
         return JsonResponse({"error": "Comment not found"}, status=404)
+
+
+@login_required
+@require_POST
+def delete_video(request, video_id):
+    video = get_object_or_404(
+        Video,
+        id=video_id,
+        user=request.user
+    )
+
+    try:
+        ik_delete_video(video.file_id)
+        video.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Video deleted successfully'
+        })
+
+    except Exception as e:
+        return JsonResponse(
+            {'error': str(e)},
+            status=500
+        )
