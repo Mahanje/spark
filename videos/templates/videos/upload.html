@@ -26,27 +26,30 @@
 
             <div id="errorContainer">
                 {% if form.errors %}
-                    <ul class="error-list">
-                        {% for field in form %}
-                            {% for error in field.errors %}
-                                <li>{{error}}</li>
-                            {% endfor %}
-                        {% endfor %}
-                        {% for error in form.non_field_erros %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
+                <ul class="error-list">
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{error}}</li>
+                    {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_erros %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
             </div>
 
             <div class="form-group">
                 <label for="id_title">Title</label>
-                <input type="text" name="title" id="id_title" class="form-input" placeholder="Enter video title" value="{{ form.title.value|default:'' }}" required/>
+                <input type="text" name="title" id="id_title" class="form-input" placeholder="Enter video title"
+                       value="{{ form.title.value|default:'' }}" required/>
             </div>
 
             <div class="form-group">
                 <label for="id_description">Description</label>
-                <textarea name="description" id="id_description" class="form-input" placeholder="Enter video description" rows="3">{{ form.description.value|default:'' }}</textarea >
+                <textarea name="description" id="id_description" class="form-input"
+                          placeholder="Enter video description"
+                          rows="3">{{ form.description.value|default:'' }}</textarea>
             </div>
 
             <div class="form-group">
@@ -54,7 +57,8 @@
                 <label class="file-input-wrapper" for="id_video_file">
                     <span id="video-label">Click to select a video file</span>
                 </label>
-                <input type="file" name="video_file" id="id_video_file" accept="video/*" required style="display:none;"/>
+                <input type="file" name="video_file" id="id_video_file" accept="video/*" required
+                       style="display:none;"/>
                 <span class="help-text">MP4, WebM, MOV, or AVI, Max 10MB</span>
             </div>
 
@@ -77,65 +81,87 @@
 
 {% block extra_js %}
 <script>
-const $ = id => document.getElementById(id);
+    const $ = id => document.getElementById(id);
 
-$("id_video_file").onchange = e => {
-    const file = e.target.files[0];
-    $("video-label").textContent = file ? file.name : "Click to select a video file";
-};
+    $("id_video_file").onchange = e => {
+        const file = e.target.files[0];
 
-$("customThumbnail").onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
+        if (!file) {
+            $("video-label").textContent = "Click to select a video file";
+            return;
+        }
 
-    const reader = new FileReader();
-    reader.onload = ev => {
-        $("thumbPreview").src = ev.target.result;
-        $("thumbPreview").classList.add("visible");
-        $("thumb-label").style.display = "none";
-        $("thumbnailData").value = ev.target.result;
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        if (file.size > maxSize) {
+
+            $("errorContainer").innerHTML = `
+            <ul class="error-list">
+                <li>Video size must be less than 10 MB</li>
+            </ul>
+        `;
+
+            e.target.value = "";
+            $("video-label").textContent = "Click to select a video file";
+
+            return;
+        }
+
+        $("errorContainer").innerHTML = "";
+        $("video-label").textContent = file.name;
     };
-    reader.readAsDataURL(file);
-};
+    $("customThumbnail").onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-$("uploadForm").onsubmit = async e => {
-    e.preventDefault();
+        const reader = new FileReader();
+        reader.onload = ev => {
+            $("thumbPreview").src = ev.target.result;
+            $("thumbPreview").classList.add("visible");
+            $("thumb-label").style.display = "none";
+            $("thumbnailData").value = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
 
-    if (!$("id_video_file").files.length || !$("id_title").value.trim()) return;
+    $("uploadForm").onsubmit = async e => {
+        e.preventDefault();
 
-    $("uploadOverlay").classList.add("active");
-    $("submitBtn").disabled = true;
-    $("errorContainer").innerHTML = "";
-    window.onbeforeunload = () => "Upload in progress";
+        if (!$("id_video_file").files.length || !$("id_title").value.trim()) return;
 
-    try {
-        const res = await fetch("{% url 'videos:upload_submit' %}", {
-            method: "POST",
-            body: new FormData(e.target)
-        });
+        $("uploadOverlay").classList.add("active");
+        $("submitBtn").disabled = true;
+        $("errorContainer").innerHTML = "";
+        window.onbeforeunload = () => "Upload in progress";
 
-        const contentType = res.headers.get("content-type") || "";
+        try {
+            const res = await fetch("{% url 'videos:upload_submit' %}", {
+                method: "POST",
+                body: new FormData(e.target)
+            });
 
-        if (!contentType.includes("application/json")) {
-            const text = await res.text();
-            throw new Error("Server returned HTML instead of JSON. Response starts with: " + text.slice(0, 100));
+            const contentType = res.headers.get("content-type") || "";
+
+            if (!contentType.includes("application/json")) {
+                const text = await res.text();
+                throw new Error("Server returned HTML instead of JSON. Response starts with: " + text.slice(0, 100));
+            }
+
+            const data = await res.json();
+            window.onbeforeunload = null;
+
+            if (data.success) {
+                $("uploadStatus").textContent = "Upload complete!";
+                setTimeout(() => location.href = '{% url "videos:list" %}', 500);
+            } else {
+                throw new Error(data.error || "Upload failed");
+            }
+        } catch (err) {
+            window.onbeforeunload = null;
+            $("uploadOverlay").classList.remove("active");
+            $("submitBtn").disabled = false;
+            $("errorContainer").innerHTML = `<ul class="error-list"><li>${err.message || "Upload failed"}</li></ul>`;
         }
-
-        const data = await res.json();
-        window.onbeforeunload = null;
-
-        if (data.success) {
-            $("uploadStatus").textContent = "Upload complete!";
-            setTimeout(() => location.href = '{% url "videos:list" %}', 500);
-        } else {
-            throw new Error(data.error || "Upload failed");
-        }
-    } catch (err) {
-        window.onbeforeunload = null;
-        $("uploadOverlay").classList.remove("active");
-        $("submitBtn").disabled = false;
-        $("errorContainer").innerHTML = `<ul class="error-list"><li>${err.message || "Upload failed"}</li></ul>`;
-    }
-};
+    };
 </script>
 {% endblock %}

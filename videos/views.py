@@ -69,62 +69,72 @@ def search_videos(request):
 @require_POST
 def video_upload(request):
     form = VideoUploadForm(request.POST, request.FILES)
-    if form.is_valid():
-        try:
-            video_file = request.FILES.get('video_file')
-            if not video_file:
-                return JsonResponse({'error': 'No video file provided'}, status=400)
 
-            video_data = upload_video(file_data=video_file.read(), file_name=video_file.name)
+    if not form.is_valid():
+        return JsonResponse(
+            {'error': 'Invalid form data'},
+            status=400
+        )
 
-            thumbnail_url = ""
-            thumbnail_file = request.FILES.get('thumbnail_file')
-            thumbnail_data_from_form = request.POST.get('thumbnail_data')
-
-            if thumbnail_file:
-                thumb_res = upload_thumbnail(
-                    file_data=thumbnail_file.read(),
-                    file_name=thumbnail_file.name
-                )
-                thumbnail_url = thumb_res["url"]
-
-            elif thumbnail_data_from_form:
-                thumb_res = upload_thumbnail(
-                    file_data=thumbnail_data_from_form,
-                    file_name=f"thumb_{video_file.name}.png"
-                )
-                thumbnail_url = thumb_res["url"]
-
-            video = Video.objects.create(
-                user=request.user,
-                title=form.cleaned_data['title'],
-                description=form.cleaned_data['description'],
-                file_id=video_data['file_id'],
-                video_url=video_data['url'],
-                thumbnail_url=thumbnail_url,
-            )
-            return JsonResponse({'success': True, 'video_id': video.id})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid form data'}, status=400)
-
-
-@login_required
-def video_upload_page(request):
-    return render(request, 'videos/upload.html', {'form': VideoUploadForm()})
-
-
-# --- حذف ویدیو ---
-@login_required
-@require_POST
-def delete_video(request, video_id):
-    video = get_object_or_404(Video, id=video_id, user=request.user)
     try:
-        ik_delete_video(video.file_id)
-        video.delete()
-        return JsonResponse({'success': True, 'message': 'Video deleted successfully'})
+        video_file = request.FILES.get('video_file')
+
+        if not video_file:
+            return JsonResponse(
+                {'error': 'No video file provided'},
+                status=400
+            )
+
+        # حداکثر 10 مگابایت
+        if video_file.size > 10 * 1024 * 1024:
+            return JsonResponse(
+                {'error': 'Video size must be less than 10 MB'},
+                status=400
+            )
+
+        video_data = upload_video(
+            file_data=video_file.read(),
+            file_name=video_file.name
+        )
+
+        thumbnail_url = ""
+
+        thumbnail_file = request.FILES.get('thumbnail_file')
+        thumbnail_data_from_form = request.POST.get('thumbnail_data')
+
+        if thumbnail_file:
+            thumb_res = upload_thumbnail(
+                file_data=thumbnail_file.read(),
+                file_name=thumbnail_file.name
+            )
+            thumbnail_url = thumb_res["url"]
+
+        elif thumbnail_data_from_form:
+            thumb_res = upload_thumbnail(
+                file_data=thumbnail_data_from_form,
+                file_name=f"thumb_{video_file.name}.png"
+            )
+            thumbnail_url = thumb_res["url"]
+
+        video = Video.objects.create(
+            user=request.user,
+            title=form.cleaned_data['title'],
+            description=form.cleaned_data['description'],
+            file_id=video_data['file_id'],
+            video_url=video_data['url'],
+            thumbnail_url=thumbnail_url,
+        )
+
+        return JsonResponse({
+            'success': True,
+            'video_id': video.id
+        })
+
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse(
+            {'error': str(e)},
+            status=500
+        )
 
 
 # --- سیستم لایک و دیسلایک ---
@@ -273,8 +283,6 @@ def delete_comment(request, pk):
 
     except Comment.DoesNotExist:
         return JsonResponse({"error": "Comment not found"}, status=404)
-
-
 
 
 @staff_member_required
