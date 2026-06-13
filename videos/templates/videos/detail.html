@@ -184,13 +184,13 @@
                                 </button>
 
                                 {% if comment.user == request.user %}
-                                <button class="report-btn" onclick="deleteComment({{ comment.id }})">
+                                <button class="remove-btn" onclick="deleteComment({{ comment.id }})">
                                     Delete
                                 </button>
                                 {% endif %}
 
                                 {% if request.user.is_staff %}
-                                <button class="report-btn" onclick="removeComment({{ comment.id }})">
+                                <button class="remove-btn" onclick="removeComment({{ comment.id }})">
                                     Remove
                                 </button>
                                 {% endif %}
