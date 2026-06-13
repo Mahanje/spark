@@ -22,7 +22,7 @@ function getCookie(name) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".report-btn").forEach(btn => {
+    document.querySelectorAll(".report-btn[data-type]").forEach(btn => {
         btn.addEventListener("click", function () {
             reportType = this.dataset.type;
             reportId = this.dataset.id;

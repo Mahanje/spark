@@ -3,11 +3,6 @@ from django.views.decorators.http import require_POST
 from django.contrib.contenttypes.models import ContentType
 from .models import Report
 
-#تست db
-from django.http import HttpResponse
-from django.db import connection
-
-
 @require_POST
 def submit_report(request):
     if not request.user.is_authenticated:
@@ -48,15 +43,3 @@ def submit_report(request):
 
 
 
-
-# تست db
-
-
-def test_db(request):
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1;")
-            row = cursor.fetchone()
-        return HttpResponse(f"DB OK: {row}")
-    except Exception as e:
-        return HttpResponse(f"DB ERROR: {e}")
