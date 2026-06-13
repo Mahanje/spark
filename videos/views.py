@@ -321,3 +321,13 @@ def delete_video(request, video_id):
             {'error': str(e)},
             status=500
         )
+
+
+
+@login_required
+def video_upload_page(request):
+    return render(
+        request,
+        'videos/upload.html',
+        {'form': VideoUploadForm()}
+    )
