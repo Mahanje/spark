@@ -100,7 +100,6 @@ def video_upload(request):
         thumbnail_url = ""
 
         thumbnail_file = request.FILES.get('thumbnail_file')
-        thumbnail_data_from_form = request.POST.get('thumbnail_data')
 
         if thumbnail_file:
             thumb_res = upload_thumbnail(
@@ -109,12 +108,6 @@ def video_upload(request):
             )
             thumbnail_url = thumb_res["url"]
 
-        elif thumbnail_data_from_form:
-            thumb_res = upload_thumbnail(
-                file_data=thumbnail_data_from_form,
-                file_name=f"thumb_{video_file.name}.png"
-            )
-            thumbnail_url = thumb_res["url"]
 
         video = Video.objects.create(
             user=request.user,
