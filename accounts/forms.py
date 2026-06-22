@@ -5,12 +5,19 @@ from .models import Profile
 
 
 class CustomUserCreationForm(UserCreationForm):
+    # این فرم مربوط به مدل User است فقط این فیلدها را نشان بده
+    # فرم را از روی مدل User بساز
     class Meta:
         model = User
+        # فیلدهایی که در فرم ثبت‌نام نمایش داده می‌شوند
         fields = ("username", "email", "password1", "password2")
 
     def save(self, commit=True):
+
+        # گرفتن User ساخته‌شده توسط فرم اصلی Django
         user = super().save(commit=False)
+
+        # اضافه کردن ایمیل (چون Django پیش‌فرض ایمیل را مدیریت نمی‌کند)
         user.email = self.cleaned_data["email"]
         if commit:
             user.save()
@@ -27,22 +34,29 @@ class UserUpdateForm(forms.ModelForm):
         model = User
         fields = ("username", "email")
 
+    # وقتی فرم ساخته می‌شود، این تابع خودکار اجرا می‌شود
     def __init__(self, *args, **kwargs):
+        # اول فرم اصلی Django ساخته شود، بعد من تغییرش بدهم
         super().__init__(*args, **kwargs)
         for f in self.fields.values():
+            # به HTML input یک کلاس CSS اضافه کن
             f.widget.attrs.update({"class": "form-input"})
 
 
+#این فرم اجازه آپلود عکس می‌دهد ولی قبل از ذخیره، هم سایز و هم نوع فایل را چک می‌کند
 class ProfileUpdateForm(forms.ModelForm):
+    # یک فیلد آپلود عکس به فرم اضافه کن (ولی اجباری نیست)
     avatar = forms.ImageField(required=False)
 
     class Meta:
         model = Profile
         fields = ['bio']
         widgets = {
+            # bio تبدیل به textarea, شود, 4 خطی باشد CSS داشته باشد
             'bio': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
         }
 
+    #وقتی فرم ساخته می‌شود، این تابع خودکار اجرا می‌شود
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for f in self.fields.values():
@@ -53,6 +67,7 @@ class ProfileUpdateForm(forms.ModelForm):
             "accept": "image/png,image/jpeg,image/webp",
         })
 
+    # وقتی کاربر عکس آپلود کرد، قبل از ذخیره اینجا بررسی کن
     def clean_avatar(self):
         avatar = self.cleaned_data.get("avatar")
         if not avatar:

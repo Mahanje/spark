@@ -1,20 +1,17 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404  # گرفتن یک شیء از دیتابیس؛ اگر پیدا نشود خطای 404 می‌دهد.
+from django.contrib import messages  # برای نمایش پیام‌های موفقیت یا خطا
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy  # برای ساخت URL بر اساس نام Route
 from django.views.generic import CreateView
 from django.contrib.auth.models import User
-from django.views.decorators.http import require_POST # Import require_POST
+from django.views.decorators.http import require_POST  # Import require_POST
 from django.http import JsonResponse
-from django.contrib.auth import get_user_model
-from django.utils import timezone
 
 from videos.imagekit_client import upload_avatar
 from videos.models import Video, VideoLike, Comment
 
-
 from .forms import CustomUserCreationForm, UserUpdateForm, ProfileUpdateForm
-from .models import Profile, Subscription # Ensure Subscription is imported
+from .models import Profile, Subscription  # Ensure Subscription is imported
 
 
 class RegisterView(CreateView):
@@ -23,46 +20,33 @@ class RegisterView(CreateView):
     success_url = reverse_lazy("accounts:login")
 
 
-
-
-def edit_profile(request):
-    if request.method == 'POST':
-
-        # ... ادامه کدهای فرم ...
-        if 'avatar' in request.FILES:
-            file_obj = request.FILES['avatar']
-            # آپلود در ImageKit
-            upload_info = imagekit.upload_avatar(
-                file=file_obj,
-                file_name=f"avatar_{request.user.id}.jpg"
-            )
-            # ذخیره آدرس در دیتابیس
-            request.user.profile.avatar_url = upload_info.response_metadata.url
-            request.user.profile.save()
-
-        # ادامه عملیات...
-
-
+# فقط کاربران لاگین‌شده به این View دسترسی دارند
 @login_required
-def profile(request):
+def profile(request):  # گرفتن پروفایل کاربر؛ اگر وجود نداشته باشد ساخته می‌شود
     profile_obj, created = Profile.objects.get_or_create(user=request.user)
 
-    if request.method == "POST":
+    if request.method == "POST":  # اگر متد ارسال پست باشد
+        # فرم ویرایش اطلاعات User (مثل username و email)
         u_form = UserUpdateForm(request.POST, instance=request.user)
+
+        # فرم ویرایش Profile (مثل bio و avatar)
         p_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile_obj)
 
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
+            # یک آبجکت Profile بساز و مقادیر فرم را داخلش بریز، ولی هنوز در دیتابیس ذخیره نکن
             profile_instance = p_form.save(commit=False)
 
             if 'avatar' in request.FILES:
                 try:
                     file_obj = request.FILES['avatar']
+
+                    # آپلود عکس در ImageKit
                     upload_info = upload_avatar(
                         file_data=file_obj.read(),
                         file_name=f"avatar_{request.user.id}.jpg"
                     )
-
+                    # ذخیره url عکس
                     profile_instance.avatar_url = upload_info["url"]
 
                 except Exception as e:
@@ -71,27 +55,36 @@ def profile(request):
             messages.success(request, "Profile Is Updated Successfully")
             return redirect("accounts:profile")
         else:
-            messages.error(request, "Correct The Errors.")
-    else:
+            messages.error(request, "Correct The Errors.")  # اگر فرم‌ها معتبر نباشند
+
+    else:  # اگر درخواست GET باشد فرم‌ها با اطلاعات فعلی پر می‌شوند
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=profile_obj)
 
+    # ارسال فرم‌ها و اطلاعات پروفایل به قالب
     return render(request, "accounts/profile.html", {
         "u_form": u_form,
         "p_form": p_form,
         "profile_obj": profile_obj,
     })
 
+
 @login_required
 @require_POST
 def toggle_subscribe(request, username):
+    # پیدا کردن صاحب کانال بر اساس username
+    # اگر پیدا نشود خطای 404 برمی‌گرداند
     channel_user = get_object_or_404(User, username=username)
 
+    # جلوگیری از سابسکرایب کردن کانال خود
     if request.user == channel_user:
         return JsonResponse({
             "success": False,
             "error": "You Can Not Subscribe Your Own Channel."
         }, status=400)
+
+    # اگر قبلاً Subscription وجود داشته باشد همان را برمی‌گرداند
+    # اگر وجود نداشته باشد یکی می‌سازد
     sub, created = Subscription.objects.get_or_create(
         subscriber=request.user,
         channel=channel_user
@@ -101,14 +94,14 @@ def toggle_subscribe(request, username):
     else:
         sub.delete()
         subscribed = False
-    sub_count = Subscription.objects.filter(channel=channel_user).count()
+    sub_count = Subscription.objects.filter(channel=channel_user).count()  # شمارش تعداد سابسکرایبرهای کانال
 
+    # ارسال نتیجه به فرانت‌اند (Ajax/JavaScript)
     return JsonResponse({
         "success": True,
         "subscribed": subscribed,
         "count": sub_count
     })
-
 
 
 @login_required
@@ -152,9 +145,6 @@ def history(request):
     })
 
 
-
-
-
 @login_required
 def subscriptions(request):
     subs = (
@@ -164,6 +154,7 @@ def subscriptions(request):
         .order_by('-created_at')
     )
 
+    #یعنی فقط کاربرهای کانال‌ها را از آبجکت‌های Subscription استخراج می‌کند.
     channels = [s.channel for s in subs]
 
     videos = (
@@ -178,12 +169,3 @@ def subscriptions(request):
         'videos': videos,
     })
 
-
-User = get_user_model()
-
-def public_profile(request, username):
-    user_obj = get_object_or_404(User, username=username)
-    return render(request, 'accounts/public_profile.html',{
-        'profile_user': user_obj
-
-    })

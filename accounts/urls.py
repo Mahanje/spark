@@ -24,5 +24,4 @@ urlpatterns = [
     path('subscriptions/', views.subscriptions, name='subscriptions'),
     path('history/', views.history, name='history'),
 
-    # path('profile/<str:username>/', views.public_profile, name='public_profile')
 ]
