@@ -20,8 +20,10 @@ from .imagekit_client import (
 )
 
 
-# در videos/views.py
+
 def video_detail(request, video_id):
+
+    # ویدیو را از دیتابیس پیدا می‌کند
     video = get_object_or_404(Video, pk=video_id)
 
     # افزایش بازدید به صورت اتمیک و سریع
@@ -30,6 +32,7 @@ def video_detail(request, video_id):
 
     is_subscribed = False
     if request.user.is_authenticated:
+        # آیا کاربر فعلی سابسکرایبر صاحب این ویدیو هست؟
         is_subscribed = Subscription.objects.filter(subscriber=request.user, channel=video.user).exists()
 
     return render(request, 'videos/detail.html', {
@@ -49,14 +52,15 @@ def video_list(request):
 
 
 def search_videos(request):
+    # پارامتر q را از URL می‌گیرد
     query = request.GET.get('q')
 
     if query:
         # جستجوی هوشمند در عنوان ویدیو و نام کاربری سازنده (کانال)
         videos = Video.objects.filter(
-            Q(title__icontains=query) |
+            Q(title__icontains=query) | #or
             Q(user__username__icontains=query)
-        ).distinct().order_by('-created_at')
+        ).distinct().order_by('-created_at') #distinct برای حذف نتایج تکراری
     else:
         # نمایش همه ویدیوها در حالت عادی
         videos = Video.objects.all().order_by('-created_at')
@@ -68,8 +72,10 @@ def search_videos(request):
 @login_required
 @require_POST
 def video_upload(request):
+    # ساخت فرم و پر کردن آن با داده‌های ارسال شده
     form = VideoUploadForm(request.POST, request.FILES)
 
+    # اعتبارسنجی فرم
     if not form.is_valid():
         return JsonResponse(
             {'error': 'Invalid form data'},
@@ -77,8 +83,10 @@ def video_upload(request):
         )
 
     try:
+        # گرفتن فایل ویدیو از فرم
         video_file = request.FILES.get('video_file')
 
+        # اگر فایل ویدیو اپلود نشده باشد
         if not video_file:
             return JsonResponse(
                 {'error': 'No video file provided'},
@@ -92,11 +100,13 @@ def video_upload(request):
                 status=400
             )
 
+        # آپلود ویدیو در ImageKit
         video_data = upload_video(
-            file_data=video_file.read(),
+            file_data=video_file.read(), # تبدیل فایل به bytes
             file_name=video_file.name
         )
 
+        # مقدار پیش‌فرض برای تامبنیل
         thumbnail_url = ""
 
         thumbnail_file = request.FILES.get('thumbnail_file')
@@ -106,9 +116,10 @@ def video_upload(request):
                 file_data=thumbnail_file.read(),
                 file_name=thumbnail_file.name
             )
+            # ذخیره لینک تامبنیل
             thumbnail_url = thumb_res["url"]
 
-
+        # ساخت رکورد ویدیو در دیتابیس
         video = Video.objects.create(
             user=request.user,
             title=form.cleaned_data['title'],
@@ -134,12 +145,18 @@ def video_upload(request):
 @login_required
 @require_POST
 def video_vote(request, video_id):
+    #  پیدا کردن ویدیو و گرفتن ان از دیتابیس
     video = get_object_or_404(Video, id=video_id)
     try:
+        # مقدار رأی ارسال شده از فرانت
         vote_value = int(request.POST.get('vote'))
+        # آیا کاربر لاگین شده قبلاً روی این ویدیو رأی داده؟
+        # اولین رکوردی که QuerySet پیدا کرده را برگردان، و اگر چیزی پیدا نشد None برگردان.
         existing_vote = VideoLike.objects.filter(user=request.user, video=video).first()
+        # فرض می‌کنیم کاربر هیچ رأی فعالی ندارد
         user_vote = None
 
+        # اگر قبلاً رأی داده باشد
         if existing_vote:
             if existing_vote.value == vote_value:
                 if vote_value == VideoLike.LIKE:
@@ -181,7 +198,7 @@ def video_vote(request, video_id):
 @require_POST
 def add_comment(request, video_id):
     video = get_object_or_404(Video, id=video_id)
-    text = request.POST.get('text', '').strip()
+    text = request.POST.get('text', '').strip() #فاصله‌های اول و آخر را حذف می‌کند
     if not text:
         return JsonResponse({'error': 'Comment text is empty'}, status=400)
 
@@ -218,47 +235,6 @@ def channel_videos(request, username):
         'is_subscribed': is_subscribed,
         'sub_count': sub_count
     })
-
-
-# --- سیستم اشتراک (Subscription) ---
-@login_required
-@require_POST
-def toggle_subscribe(request, username):
-    """
-    Handles subscribing or unsubscribing from a channel.
-    """
-    channel_user = get_object_or_404(User, username=username)
-    subscriber = request.user
-
-    if subscriber == channel_user:
-        return JsonResponse({'success': False, 'error': 'You cannot subscribe to yourself.'}, status=400)
-
-    try:
-        subscription, created = Subscription.objects.get_or_create(
-            subscriber=subscriber,
-            channel=channel_user
-        )
-
-        if not created:  # If it already existed, it means we are unsubscribing
-            subscription.delete()
-            is_subscribed = False
-            message = f'You have unsubscribed from {channel_user.username}.'
-        else:  # It was created, meaning we are subscribing
-            is_subscribed = True
-            message = f'You have subscribed to {channel_user.username}.'
-
-        # Get the new total subscriber count
-        sub_count = Subscription.objects.filter(channel=channel_user).count()
-
-        return JsonResponse({
-            'success': True,
-            'is_subscribed': is_subscribed,
-            'sub_count': sub_count,
-            'message': message
-        })
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required

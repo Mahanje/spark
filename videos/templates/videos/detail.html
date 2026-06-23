@@ -8,15 +8,7 @@
 <link rel="stylesheet" href="{% static 'css/videoplayer.css' %}">
 <link rel="stylesheet" href="{% static 'css/comment.css' %}">
 <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
-<style>
-    /* استایل‌های داینامیک برای دکمه سابسکرایب جهت اطمینان از اعمال وضعیت active */
-    .subscribe-btn.active {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
 
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -30,8 +22,8 @@
 
             </button>
             <div class="menu-dropdown report-btn" id="videoMenuDropdown"
-                data-type="video"
-                data-id="{{ video.id }}">
+                 data-type="video"
+                 data-id="{{ video.id }}">
                 Report
                 <!-- گزینه‌های دیگر -->
             </div>
@@ -62,7 +54,7 @@
             <div class="video-actions">
 
                 {% if user.is_authenticated %}
-                <button class="vote-btn {% if user_vote == 1 %}active{% endif %}"
+                <button id="like-btn" class="vote-btn {% if user_vote == 1 %}active{% endif %}"
                         onclick="vote({{ video.id }}, 1)">
                     👍 <span id="like-count">{{ video.likes }}</span>
                 </button>
@@ -75,7 +67,7 @@
 
 
                 {% if user.is_authenticated %}
-                <button class="vote-btn {% if user_vote == -1 %}active{% endif %}"
+                <button id="dislike-btn" class="vote-btn {% if user_vote == -1 %}active{% endif %}"
                         onclick="vote({{ video.id }}, -1)">
                     👎 <span id="dislike-count">{{ video.dislikes }}</span>
                 </button>
@@ -114,10 +106,11 @@
 
         <!-- دکمه سابسکرایب -->
         {% if request.user.is_authenticated and request.user != video.user %}
-        <button id="subscribe-btn"
+        <button
+                id="subscribe-btn"
                 class="subscribe-btn {% if is_subscribed %}active{% endif %}"
                 onclick="toggleSubscribe('{{ video.user.username }}')"
-                style="background-color: #ffffff; color: #000000; border: none; padding: 10px 20px; border-radius: 25px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s ease; white-space: nowrap;">
+        >
             {% if is_subscribed %}Subscribed{% else %}Subscribe{% endif %}
         </button>
         {% endif %}
@@ -217,7 +210,6 @@
 </div>
 
 
-
 <div id="reportModal" class="report-modal">
 
     <div class="report-box">
@@ -258,29 +250,6 @@
             videoPlayer.load();
         }
 
-        // تابع سابسکرایب
-        window.toggleSubscribe = function (username) {
-            fetch("{% url 'accounts:toggle_subscribe' 'PLACEHOLDER' %}".replace('PLACEHOLDER', username), {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": csrf,
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        const btn = document.getElementById('subscribe-btn');
-                        if (btn) {
-                            const on = data.is_subscribed;  // <-- این مهمه
-                            btn.textContent = on ? 'Subscribed' : 'Subscribe';
-                            btn.classList.toggle('active', on);
-                        }
-                    } else {
-                        alert(data.error);
-                    }
-                });
-        };
 
         window.submitComment = function (videoId) {
             const text = document.getElementById('comment-text').value.trim();
@@ -396,33 +365,90 @@
 
     function deleteComment(id) {
 
-            if (!confirm("Delete this comment?")) return
+        if (!confirm("Delete this comment?")) return
 
-            fetch(`/comment/${id}/delete/`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken")
+        fetch(`/comment/${id}/delete/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+            .then(() => location.reload())
+
+    }
+
+
+    function removeComment(id) {
+
+        if (!confirm("Remove this comment?")) return
+
+        fetch(`/comment/${id}/remove/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+            .then(() => location.reload())
+
+    }
+
+
+    function toggleSubscribe(username) {
+        const csrf = getCookie('csrftoken');
+
+        const url = "{% url 'accounts:toggle_subscribe' 'PLACEHOLDER' %}"
+            .replace('PLACEHOLDER', encodeURIComponent(username));
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            credentials: "same-origin",
+        })
+            .then(async (response) => {
+                const contentType = response.headers.get("content-type") || "";
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error(`HTTP Error: ${response.status}`, text);
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                if (!contentType.includes("application/json")) {
+                    const text = await response.text();
+                    console.error(`Unexpected Content-Type: ${contentType}`, text);
+                    throw new Error(`Expected JSON`);
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const btn = document.getElementById('subscribe-btn');
+
+                    const isSubscribed = data.subscribed;
+
+                    if (btn) {
+                        btn.textContent = isSubscribed
+                            ? 'Subscribed'
+                            : 'Subscribe';
+
+                        btn.classList.toggle(
+                            'active',
+                            isSubscribed
+                        );
+                    }
+                } else {
+                    alert(data.error || "Subscription failed");
                 }
             })
-                .then(() => location.reload())
+            .catch(err => {
+                console.error("toggleSubscribe error:", err);
+            });
+    }
 
-        }
-
-
-
-        function removeComment(id) {
-
-            if (!confirm("Remove this comment?")) return
-
-            fetch(`/comment/${id}/remove/`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken")
-                }
-            })
-                .then(() => location.reload())
-
-        }
 </script>
 
 

@@ -4,7 +4,6 @@ from typing import Optional, Dict, Any
 
 from imagekitio import ImageKit
 
-
 # ---------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------
@@ -33,11 +32,7 @@ def get_imagekit_client() -> ImageKit:
 # Helpers
 # ---------------------------------------------------------------------
 def _get_watermark_transformation(username: Optional[str]):
-    """
-    Build ImageKit watermark transformation chain.
-
-    If username is None/empty, return an empty transformation safely.
-    """
+    # دستور ساخت برچسب (watermark)
     if not username:
         return ""
 
@@ -54,6 +49,8 @@ def _get_watermark_transformation(username: Optional[str]):
     )
 
 
+# این تابع لینک ویدیو را می‌گیرد و به ImageKit می‌گه
+# "با کیفیت کمتر و فرمت مناسب‌تر پخش کن"
 def get_optimized_video_url(base_url: str) -> str:
     """
     Keep this only if you still want a light URL parameter for delivery.
@@ -68,34 +65,21 @@ def get_optimized_video_url(base_url: str) -> str:
 
 
 def get_streaming_url(base_url: str) -> str:
-    """
-    Deprecated / avoid using if your free-tier Video Transformations are exhausted.
-
-    Returning a direct URL here prevents accidental HLS dependency.
-    """
+    # برای اضافه کردن HLS در اینده
     return base_url
 
 
 def get_thumbnail_url(base_url: str, username: Optional[str] = None) -> str:
-    """
-    Deprecated for video-derived thumbnails.
-
-    IMPORTANT:
-    Do NOT use /ik-thumbnail.jpg because it consumes ImageKit video transformation quota.
-    Use an uploaded image URL instead, and keep this only as a compatibility fallback.
-    """
+    # این تابع فعلاً فقط لینک ورودی را برمی‌گرداند و هیچ thumbnail واقعی تولید نمی‌کند
     return base_url
 
 
 def add_image_watermark(base_url: str, username: Optional[str] = None) -> str:
-    """
-    Apply watermark transformation to an image URL.
-    Safe only for images, not video-derived thumbnails.
-    """
+    # چسباندن برچسب روی thumbnail
     transformations = _get_watermark_transformation(username)
     if not transformations:
         return base_url
-
+    # اگر قبلاً transform داشت ادامه بده اگر نداشت بساز
     if "?tr=" in base_url:
         return f"{base_url},{transformations}"
     return f"{base_url}?tr={transformations}"
@@ -105,15 +89,8 @@ def add_image_watermark(base_url: str, username: Optional[str] = None) -> str:
 # Uploads
 # ---------------------------------------------------------------------
 def upload_video(file_data: bytes, file_name: str, folder: str = "videos") -> Dict[str, Any]:
-    """
-    Upload a video file to ImageKit and return file metadata.
-
-    Expected usage:
-    - Save the returned URL as `video_url`
-    - Save returned file_id if you want deletion later
-    """
     client = get_imagekit_client()
-
+    # فایل ویدیو را می‌فرستد به ImageKit ,اسم فایل را تنظیم می‌کند ,داخل فولدر مشخص ذخیره می‌کند
     response = client.files.upload(
         file=file_data,
         file_name=file_name,
@@ -121,27 +98,21 @@ def upload_video(file_data: bytes, file_name: str, folder: str = "videos") -> Di
     )
 
     return {
-        "file_id": response.file_id,
-        "url": response.url,
+        "file_id": response.file_id,  # شناسه فایل برای حذف یا مدیریت
+        "url": response.url,  # شناسه فایل برای حذف یا مدیریت
     }
 
 
-def upload_thumbnail(file_data, file_name: str, folder: str = "thumbnails") -> Dict[str, Any]:
-    """
-    Upload a thumbnail image.
-
-    Supports:
-    - raw bytes
-    - base64 string
-    - data URL string like: data:image/jpeg;base64,...
-
-    IMPORTANT:
-    This should upload a real image, not derive a thumbnail from video.
-    """
+# این قسمت فقط وظیفه‌اش اینه که هر نوع ورودی تصویر رو به bytes تبدیل کنه تا آماده آپلود بشه.
+# یک تابع کمکی (private) برای آپلود عکس.
+def _upload_image(file_data, file_name: str, folder: str) -> Dict[str, Any]:
+    # بررسی می‌کند آیا ورودی از قبل bytes هست یا نه
     if isinstance(file_data, bytes):
         image_bytes = file_data
 
+    # اگر ورودی رشته (string) بود وارد این بخش می‌شود.
     elif isinstance(file_data, str):
+        # بررسی می‌کند آیا رشته از نوع Data URL است یا نه
         if file_data.startswith("data:"):
             base64_data = file_data.split(",", 1)[1]
             image_bytes = base64.b64decode(base64_data)
@@ -149,52 +120,41 @@ def upload_thumbnail(file_data, file_name: str, folder: str = "thumbnails") -> D
             image_bytes = base64.b64decode(file_data)
 
     else:
-        raise TypeError("file_data must be bytes or str (base64/data URL).")
+        raise TypeError(
+            "file must be bytes or str (base64/data URL)."
+        )
 
+    # اتصال به ImageKit
     client = get_imagekit_client()
 
+    # آپلود
     response = client.files.upload(
         file=image_bytes,
         file_name=file_name,
         folder=folder,
     )
 
+    # اطلاعات فایل آپلود شده را برمی‌گرداند
     return {
         "file_id": response.file_id,
         "url": response.url,
     }
 
+#wrapper
+def upload_thumbnail(
+        file_data,
+        file_name: str,
+        folder: str = "thumbnails"
+) -> Dict[str, Any]:
+    return _upload_image(file_data, file_name, folder)
 
-def upload_avatar(file_data, file_name: str, folder: str = "avatars") -> Dict[str, Any]:
-    """
-    Upload an avatar image.
-    Supports bytes or base64/data URL string.
-    """
-    if isinstance(file_data, bytes):
-        image_bytes = file_data
 
-    elif isinstance(file_data, str):
-        if file_data.startswith("data:"):
-            base64_data = file_data.split(",", 1)[1]
-            image_bytes = base64.b64decode(base64_data)
-        else:
-            image_bytes = base64.b64decode(file_data)
-
-    else:
-        raise TypeError("file_data must be bytes or str (base64/data URL).")
-
-    client = get_imagekit_client()
-
-    response = client.files.upload(
-        file=image_bytes,
-        file_name=file_name,
-        folder=folder,
-    )
-
-    return {
-        "file_id": response.file_id,
-        "url": response.url,
-    }
+def upload_avatar(
+        file_data,
+        file_name: str,
+        folder: str = "avatars"
+) -> Dict[str, Any]: #type hint
+    return _upload_image(file_data, file_name, folder)
 
 
 # ---------------------------------------------------------------------
@@ -210,9 +170,6 @@ def delete_video(file_id: str) -> bool:
 
 
 def delete_avatar(file_id: str) -> bool:
-    """
-    Delete an avatar from ImageKit by file_id.
-    """
     if not file_id:
         return False
 
