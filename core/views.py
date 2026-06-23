@@ -8,12 +8,14 @@ def submit_report(request):
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'error', 'message': 'Please Login First.'}, status=403)
 
-    model_name = request.POST.get('model')
+    # گرفتن اطلاعاتی که از فرانت ارسال شده
+    model_name = request.POST.get('model')# اسم مدل (video, comment, ...)
     object_id = request.POST.get('id')
     reason = request.POST.get('reason')
     description = request.POST.get('description', '')
 
     try:
+        # تبدیل اسم مدل به ContentType (مدل واقعی Django)
         content_type = ContentType.objects.get(model=model_name)
 
         # جلوگیری از گزارش تکراری
