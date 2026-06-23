@@ -214,14 +214,17 @@ def add_comment(request, video_id):
     })
 
 
-# --- صفحه کانال کاربر (فقط نمایش) ---
+#  صفحه کانال کاربر
 def channel_videos(request, username):
+    #میره تو دیتابیس دنبال این username میگرده
     channel_user = get_object_or_404(User, username=username)
     videos = Video.objects.filter(user=channel_user).order_by('-created_at')
+    # اگر پروفایل داشته باشه → همونو میاره ,اگر نداشته باشه → یکی جدید می‌سازه
     profile, created = Profile.objects.get_or_create(user=channel_user)
 
     is_subscribed = False
     if request.user.is_authenticated:
+        # آیا user فعلی این کانال رو سابسکرایب کرده؟
         is_subscribed = Subscription.objects.filter(
             subscriber=request.user, channel=channel_user
         ).exists()
@@ -241,6 +244,7 @@ def channel_videos(request, username):
 @require_POST
 def delete_comment(request, pk):
     try:
+        #یعنی کامنت با id = pk رو پیدا کن
         comment = Comment.objects.get(pk=pk)
 
         if comment.user != request.user:
@@ -277,6 +281,7 @@ def delete_video(request, video_id):
     )
 
     try:
+        # ویدیو از دیتابیس حذف نمیشه فقط از ImageKit هم پاک میشه
         ik_delete_video(video.file_id)
         video.delete()
 
