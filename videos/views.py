@@ -20,9 +20,7 @@ from .imagekit_client import (
 )
 
 
-
 def video_detail(request, video_id):
-
     # ویدیو را از دیتابیس پیدا می‌کند
     video = get_object_or_404(Video, pk=video_id)
 
@@ -50,22 +48,64 @@ def video_list(request):
 
 # --- جستجوی ویدیو ---
 
-
 def search_videos(request):
-    # پارامتر q را از URL می‌گیرد
-    query = request.GET.get('q')
+    query = request.GET.get('q', '').strip()
 
-    if query:
-        # جستجوی هوشمند در عنوان ویدیو و نام کاربری سازنده (کانال)
-        videos = Video.objects.filter(
-            Q(title__icontains=query) | #or
-            Q(user__username__icontains=query)
-        ).distinct().order_by('-created_at') #distinct برای حذف نتایج تکراری
-    else:
-        # نمایش همه ویدیوها در حالت عادی
-        videos = Video.objects.all().order_by('-created_at')
+    if not query:
+        return JsonResponse({
+            "videos": [],
+            "channels": []
+        })
 
-    return render(request, 'videos/list.html', {'videos': videos, 'query': query})
+    # =========================
+    # 🎥 VIDEOS
+    # =========================
+    videos = Video.objects.filter(
+        Q(title__icontains=query) |
+        Q(description__icontains=query) |
+        Q(user__username__icontains=query)
+    ).select_related("user")[:10]
+
+    # =========================
+    # 👤 CHANNELS
+    # =========================
+    channels_qs = User.objects.filter(
+        username__icontains=query
+    ).select_related("profile")[:5]
+
+    channels_data = []
+
+    for u in channels_qs:
+        profile = getattr(u, "profile", None)
+
+        # ✅ چون avatar_url هست (نه ImageField)
+        avatar_url = ""
+
+        if profile and getattr(profile, "avatar_url", None):
+            avatar_url = profile.avatar_url
+
+        channels_data.append({
+            "id": u.id,
+            "username": u.username,
+            "avatar": avatar_url,
+            "fallback_letter": (u.username[:1].upper() if u.username else "?")
+        })
+
+    # =========================
+    # 📦 RESPONSE
+    # =========================
+    return JsonResponse({
+        "videos": [
+            {
+                "id": v.id,
+                "title": v.title,
+                "username": v.user.username,
+                "thumbnail": getattr(v, "thumbnail_url", "") or ""
+            }
+            for v in videos
+        ],
+        "channels": channels_data
+    })
 
 
 # --- آپلود ویدیو ---
@@ -102,7 +142,7 @@ def video_upload(request):
 
         # آپلود ویدیو در ImageKit
         video_data = upload_video(
-            file_data=video_file.read(), # تبدیل فایل به bytes
+            file_data=video_file.read(),  # تبدیل فایل به bytes
             file_name=video_file.name
         )
 
@@ -198,7 +238,7 @@ def video_vote(request, video_id):
 @require_POST
 def add_comment(request, video_id):
     video = get_object_or_404(Video, id=video_id)
-    text = request.POST.get('text', '').strip() #فاصله‌های اول و آخر را حذف می‌کند
+    text = request.POST.get('text', '').strip()  # فاصله‌های اول و آخر را حذف می‌کند
     if not text:
         return JsonResponse({'error': 'Comment text is empty'}, status=400)
 
@@ -216,7 +256,7 @@ def add_comment(request, video_id):
 
 #  صفحه کانال کاربر
 def channel_videos(request, username):
-    #میره تو دیتابیس دنبال این username میگرده
+    # میره تو دیتابیس دنبال این username میگرده
     channel_user = get_object_or_404(User, username=username)
     videos = Video.objects.filter(user=channel_user).order_by('-created_at')
     # اگر پروفایل داشته باشه → همونو میاره ,اگر نداشته باشه → یکی جدید می‌سازه
@@ -244,7 +284,7 @@ def channel_videos(request, username):
 @require_POST
 def delete_comment(request, pk):
     try:
-        #یعنی کامنت با id = pk رو پیدا کن
+        # یعنی کامنت با id = pk رو پیدا کن
         comment = Comment.objects.get(pk=pk)
 
         if comment.user != request.user:
@@ -295,7 +335,6 @@ def delete_video(request, video_id):
             {'error': str(e)},
             status=500
         )
-
 
 
 @login_required

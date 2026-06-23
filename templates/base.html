@@ -70,23 +70,48 @@
                 </svg>
             </button>
         </form>
+        <div class="search-results" id="searchResults"></div>
     </div>
 
-    <div class="mobile-search-overlay" id="mobileSearchOverlay">
-        <div class="mobile-search-header">
+    <!-- ======================================== -->
+    <!-- MOBILE SEARCH OVERLAY -->
+    <!-- ======================================== -->
+    <div class="mobile-search-overlay" id="mobileSearchOverlay" style="display: none;">
+        <div class="mobile-search-container">
 
-            <button type="button" id="closeSearchBtn" class="close-search-btn">
-                ✕
-            </button>
+            <!-- هدر -->
+            <div class="mobile-search-header">
+                <button type="button" id="closeSearchBtn" class="close-search-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+                <span class="mobile-search-title">Search</span>
+            </div>
 
-            <form action="/search/" method="get" class="mobile-search-form">
-                <input
-                        type="text"
-                        name="q"
-                        placeholder="Search"
-                        class="mobile-search-input"
-                        id="mobileSearchInput">
-            </form>
+            <!-- باکس جستجو -->
+            <div class="mobile-search-body">
+                <div class="mobile-search-wrapper">
+                    <svg class="mobile-search-icon" viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="currentColor"/>
+                        <!--                              d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z"-->
+                    </svg>
+                    <input
+                            type="text"
+                            name="q"
+                            placeholder="Search videos and channels..."
+                            class="mobile-search-input"
+                            id="mobileSearchInput"
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
+                    >
+                </div>
+
+                <!-- نتایج جستجو (مخصوص موبایل) -->
+                <div class="mobile-search-results" id="mobileSearchResults"></div>
+            </div>
 
         </div>
     </div>
@@ -219,113 +244,228 @@
 <script src="{% static 'report.js' %}"></script>
 
 <script>
-
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-
+        window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
-                .then(function () {
-                    console.log('SW Registered');
-                })
-                .catch(function (err) {
-                    console.log('SW Failed', err);
-                });
-
+                .then(() => console.log('SW Registered'))
+                .catch(err => console.log('SW Failed', err));
         });
     }
 
+    document.addEventListener("DOMContentLoaded", function () {
 
-    document.addEventListener('DOMContentLoaded', function () {
+        const body = document.body;
 
         const menuBtn = document.getElementById('sidebarToggle');
         const overlay = document.getElementById('sidebarOverlay');
-        const body = document.body;
 
+        const searchBtn = document.getElementById("mobileSearchBtn");
+        const searchForm = document.getElementById("searchForm");
+        const searchInput = document.getElementById("searchInput");
+        const resultsBox = document.getElementById("searchResults");
+        const backdrop = document.getElementById("searchBackdrop");
+
+        const mobileOverlay = document.getElementById("mobileSearchOverlay");
+        const mobileInput = document.getElementById("mobileSearchInput");
+        const closeSearchBtn = document.getElementById("closeSearchBtn");
+        const mobileResults = document.getElementById("mobileSearchResults");
+
+        let timeout = null;
+        let controller = null;
+
+        // ======================
+        // SIDEBAR
+        // ======================
         function toggleSidebar() {
-
             if (window.innerWidth <= 768) {
                 body.classList.toggle('sidebar-open');
             } else {
                 body.classList.toggle('sidebar-closed');
             }
-
         }
 
-        if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
+        menuBtn?.addEventListener('click', toggleSidebar);
 
-        if (overlay) overlay.addEventListener('click', () => body.classList.remove('sidebar-open'));
+        overlay?.addEventListener('click', () => {
+            body.classList.remove('sidebar-open');
+        });
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") {
                 body.classList.remove('sidebar-open');
             }
         });
-    });
 
+        // ======================
+        // ✅ اضافه شد: تابع باز کردن سرچ موبایل
+        // ======================
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const searchBtn = document.getElementById("mobileSearchBtn");
-        const searchForm = document.getElementById("searchForm");
-        const searchInput = document.getElementById("searchInput");
+        function openSearch() {
+            if (!mobileOverlay) return;
 
-        if (!searchBtn || !searchForm) return;
+            mobileOverlay.style.display = "block";
+            mobileOverlay.classList.add("active");
 
-        searchBtn.addEventListener("click", function (e) {
+        }
+
+        function closeSearch() {
+            if (!mobileOverlay) return;
+
+            mobileOverlay.classList.remove("active");
+            mobileOverlay.style.display = "none";
+            document.body.classList.remove("search-open");
+        }
+
+        // ======================
+        // MOBILE SEARCH OPEN/CLOSE
+        // ======================
+        searchBtn?.addEventListener("click", function () {
             if (window.innerWidth <= 768) {
-                // اگر فرم بسته است، آن را باز کن
-                if (!searchForm.classList.contains("active")) {
-                    e.preventDefault();
-                    searchForm.classList.add("active");
-                    setTimeout(() => searchInput.focus(), 150);
-                }
-                // اگر فرم باز است و اینپوت مقدار دارد، جستجو کن
-                else if (searchInput.value.trim() !== "") {
-                    searchForm.submit();
-                }
-                // اگر باز است ولی خالی، ببندش
-                else {
-                    searchForm.classList.remove("active");
-                }
+                openSearch();
+            }
+        });
+        closeSearchBtn?.addEventListener("click", function () {
+            closeSearch();
+        });
+
+        mobileOverlay?.addEventListener("click", function (e) {
+            if (e.target === mobileOverlay) {
+                closeSearch();
             }
         });
 
-        // بستن سرچ در صورت کلیک به بیرون
-        document.addEventListener("click", function (e) {
-            if (!searchForm.contains(e.target) && window.innerWidth <= 768) {
-                searchForm.classList.remove("active");
+        // ======================
+        // SEARCH FUNCTION
+        // ======================
+        function doSearch(query, targetBox) {
+
+            const box = targetBox || resultsBox;
+            if (!box) return;
+
+            clearTimeout(timeout);
+
+            if (query.length < 2) {
+                box.innerHTML = "";
+                box.classList.remove("active");
+                backdrop?.classList.remove("active");
+                return;
             }
+
+            timeout = setTimeout(() => {
+
+                if (controller) controller.abort();
+                controller = new AbortController();
+
+                box.innerHTML = "<div class='search-loading'>Searching...</div>";
+
+                fetch(`/search/?q=${encodeURIComponent(query)}`, {
+                    signal: controller.signal
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        renderSearch(data, box);
+                        box.classList.add("active");
+                        backdrop?.classList.add("active");
+                    })
+                    .catch(err => {
+                        if (err.name === "AbortError") return;
+                        console.error(err);
+                        box.innerHTML = "<div class='search-error'>Error</div>";
+                    });
+
+            }, 300);
+        }
+
+        searchInput?.addEventListener("input", function () {
+            doSearch(this.value.trim(), resultsBox);
         });
+
+        mobileInput?.addEventListener("input", function () {
+            doSearch(this.value.trim(), mobileResults || resultsBox);
+        });
+
+        backdrop?.addEventListener("click", function () {
+            resultsBox.classList.remove("active");
+            backdrop.classList.remove("active");
+            resultsBox.innerHTML = "";
+        });
+
     });
 
+    function renderSearch(data, box) {
 
-    document.addEventListener("DOMContentLoaded", function () {
+        if (!box) return;
 
-        const openBtn = document.getElementById("mobileSearchBtn");
-        const closeBtn = document.getElementById("closeSearchBtn");
+        let html = "";
 
-        const overlay = document.getElementById("mobileSearchOverlay");
-        const input = document.getElementById("mobileSearchInput");
+        if (data.channels?.length) {
 
-        openBtn.addEventListener("click", () => {
+            html += `<div class="search-title">Channels</div>`;
 
-            if (window.innerWidth <= 768) {
+            data.channels.forEach(c => {
 
-                overlay.classList.add("active");
+                const avatar = (c.avatar && c.avatar.trim() !== "")
+                    ? `<img src="${c.avatar}" class="channel-avatar"/>`
+                    : `<div class="channel-avatar-fallback">${c.fallback_letter || "?"}</div>`;
 
-                setTimeout(() => {
-                    input.focus();
-                }, 200);
-            }
-        });
+                html += `
+                <div class="search-item channel"
+                     onclick="location.href='/channel/${c.username}/'">
 
-        closeBtn.addEventListener("click", () => {
-            overlay.classList.remove("active");
-        });
+                    ${avatar}
 
-    });
+                    <div class="search-info">
+                        <div class="search-video-title">${escapeHtml(c.username)}</div>
+                    </div>
 
+                </div>
+            `;
+            });
+        }
+
+        if (data.videos?.length) {
+
+            html += `<div class="search-title">Videos</div>`;
+
+            data.videos.forEach(v => {
+
+                const thumb = (v.thumbnail && v.thumbnail.trim() !== "")
+                    ? v.thumbnail
+                    : "/static/images/images (1).png";
+
+                html += `
+                <div class="search-item video"
+                     onclick="location.href='/video/${v.id}/'">
+
+                    <img src="${thumb}" class="search-thumb"/>
+
+                    <div class="search-info">
+                        <div class="search-video-title">${escapeHtml(v.title)}</div>
+                        <div class="search-video-user">@${escapeHtml(v.username)}</div>
+                    </div>
+
+                </div>
+            `;
+            });
+        }
+
+        if (!html) {
+            html = "<div class='search-empty'>No results</div>";
+        }
+
+        box.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
 </script>
-
 {% block extra_js %}{% endblock %}
 
 
@@ -354,6 +494,7 @@
 
 </div>
 
+<div id="searchBackdrop"></div>
 </body>
 </html>
 

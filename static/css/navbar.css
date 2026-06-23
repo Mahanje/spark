@@ -27,6 +27,7 @@
 
 /* بخش سرچ کپسولی - طرح جدید */
 .nav-center {
+    position: relative;
     flex: 0 1 720px;
     padding: 0 16px;
     justify-content: center;
