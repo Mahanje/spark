@@ -5,10 +5,6 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from core.models import Report
 
-from django.http import HttpResponse
-
-
-from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -24,24 +20,34 @@ def dashboard_home(request):
 
 @staff_member_required
 def video_list(request):
+    # گرفتن همه ویدیوها از دیتابیس و مرتب‌سازی بر اساس جدیدترین
     videos = Video.objects.all().order_by('-created_at')
 
+    # گرفتن تعداد آیتم در هر صفحه از URL (مثلاً ?per_page=20)
     per_page = request.GET.get("per_page", 10)
 
     try:
+        # تبدیل مقدار به عدد
         per_page = int(per_page)
     except:
+        # اگر مقدار اشتباه بود، پیش‌فرض 10 تا در نظر می‌گیریم
         per_page = 10
 
+    # ساخت paginator برای تقسیم ویدیوها به صفحات
     paginator = Paginator(videos, per_page)
 
+    # گرفتن شماره صفحه از URL
     page_number = request.GET.get("page")
+
+    # گرفتن داده‌های همان صفحه (اگر اشتباه باشه خودش اصلاح می‌کنه)
     page_obj = paginator.get_page(page_number)
 
+    # داده‌هایی که به قالب HTML ارسال میشن
     context = {
-        "videos": page_obj,  # ← این خط مهم است
-        "page_obj": page_obj,
-        "per_page": per_page
+        "videos": page_obj,  # لیست ویدیوهای همین صفحه
+        "page_obj": page_obj,  # اطلاعات کامل pagination (صفحه، تعداد صفحات و ...)
+        "per_page": per_page,  # تعداد آیتم در هر صفحه
+        "total_videos": videos.count()
     }
 
     return render(request, 'dashboard/videos.html', context)
@@ -67,21 +73,24 @@ def comments(request):
     page_obj = paginator.get_page(page_number)
 
     return render(request, "dashboard/comments.html", {
-        "comments": page_obj,  # مهم
+        "comments": page_obj,
         "page_obj": page_obj,
-        "per_page": per_page
+        "per_page": per_page,
+        "total_comments": comments.count()
     })
 
 
 @staff_member_required
 def delete_comment(request, comment_id):
+    # پیدا کردن کامنت با آیدی، اگر نبود ارور 404
     comment = get_object_or_404(Comment, id=comment_id)
 
     if request.method == "POST":
         comment.delete()
         messages.success(request, "Comment deleted successfully.")
-        return redirect("dashboard_comments")
+        return redirect("dashboard:comments")
 
+    # اگر GET باشد , نمایش صفحه تأیید حذف
     return render(request, "dashboard/delete_comment_confirm.html", {
         "comment": comment
     })
@@ -89,9 +98,13 @@ def delete_comment(request, comment_id):
 
 @staff_member_required
 def edit_user(request, user_id):
+    # گرفتن کاربر از دیتابیس یا 404 اگر وجود نداشت
     user_obj = get_object_or_404(User, id=user_id)
 
+    # اگر فرم ارسال شده باشد (دکمه Save زده شده باشد)
     if request.method == "POST":
+
+        # گرفتن داده‌ها از فرم و حذف فاصله اضافی
         username = request.POST.get("username", "").strip()
         email = request.POST.get("email", "").strip()
         is_staff = request.POST.get("is_staff") == "on"
@@ -133,15 +146,13 @@ def delete_user(request, user_id):
         messages.success(request, "User deleted successfully.")
         return redirect("dashboard:users")
 
-    if request.user.id == user_obj.id:
-        messages.error(request, "You cannot delete your own account.")
-        return redirect("dashboard:users")
-
     return render(request, "dashboard/delete_user_confirm.html", {"user_obj": user_obj})
 
 
 def users(request):
+    # گرفتن متن جستجو از URL (?q=...)
     query = request.GET.get("q", "")
+    # گرفتن تعداد آیتم در هر صفحه
     per_page = request.GET.get("per_page", 10)
 
     try:
@@ -173,9 +184,6 @@ def users(request):
     return render(request, "dashboard/users.html", context)
 
 
-from django.core.paginator import Paginator
-
-
 def report_list(request):
     per_page = int(request.GET.get('per_page', 10))
 
@@ -196,6 +204,7 @@ def report_list(request):
             'reports': page_obj,
             'page_obj': page_obj,
             'per_page': per_page,
+            "total_reports": reports.count()
         }
     )
 
@@ -226,5 +235,3 @@ def report_channel(request, user_id):
         return JsonResponse({"status": "reported"})
 
     return JsonResponse({"error": "invalid"}, status=400)
-
-
