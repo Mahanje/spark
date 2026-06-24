@@ -123,6 +123,16 @@
     {% if request.user == video.user %}
     <div class="video-owner-actions" style="margin-top: 10px;">
         <button class="delete-btn" type="button" onclick="deleteVideo({{ video.id }})">Delete</button>
+        <button
+                class="edit-btn"
+                onclick="editVideo(
+                {{ video.id }},
+                '{{ video.title|escapejs }}',
+                '{{ video.description|escapejs }}',
+                '{{ video.thumbnail_url }}'
+        )">
+            Edit
+        </button>
     </div>
     {% endif %}
 
@@ -233,6 +243,32 @@
 
     </div>
 
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-box">
+
+        <h3>Edit Video</h3>
+
+        <input id="editTitle" placeholder="Title" class="input">
+        <textarea id="editDescription" placeholder="Description" class="textarea"></textarea>
+
+        <div class="upload-box">
+            <input type="file" id="editThumbnail" hidden>
+            <img id="thumbnailPreview" style="width:100%; margin-top:10px; display:none; border-radius:8px;">
+
+            <div class="upload-area" onclick="document.getElementById('editThumbnail').click()">
+                <div class="upload-text">Click to select a thumbnail</div>
+                <div class="upload-subtext">PNG, JPG (Recommended 1280×720)</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="submitEdit()" class="btn save">Save</button>
+            <button onclick="closeModal()" class="btn cancel">Cancel</button>
+        </div>
+
+    </div>
 </div>
 {% endblock %}
 
@@ -375,6 +411,65 @@
         })
             .then(() => location.reload())
 
+    }
+
+    document.getElementById("editThumbnail").addEventListener("change", function () {
+        const fileName = this.files[0]?.name;
+        if (fileName) {
+            document.querySelector(".upload-text").innerText = fileName;
+        }
+    });
+
+    let currentVideoId = null;
+
+    function editVideo(id, title, description, thumbnailUrl) {
+        currentVideoId = id;
+
+        document.getElementById("editTitle").value = title;
+        document.getElementById("editDescription").value = description;
+
+        const img = document.getElementById("thumbnailPreview");
+
+        if (thumbnailUrl) {
+            img.src = thumbnailUrl;
+            img.style.display = "block";
+        } else {
+            img.style.display = "none";
+        }
+
+        document.getElementById("editModal").style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+
+    function submitEdit() {
+        let formData = new FormData();
+
+        formData.append("title", document.getElementById("editTitle").value);
+        formData.append("description", document.getElementById("editDescription").value);
+
+        let file = document.getElementById("editThumbnail").files[0];
+        if (file) {
+            formData.append("thumbnail_file", file);
+        }
+
+        fetch(`/videos/edit/${currentVideoId}/`, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            });
     }
 
 

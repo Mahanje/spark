@@ -344,3 +344,44 @@ def video_upload_page(request):
         'videos/upload.html',
         {'form': VideoUploadForm()}
     )
+
+
+@login_required
+@require_POST
+def edit_video(request, video_id):
+    video = get_object_or_404(Video, id=video_id, user=request.user)
+
+    title = request.POST.get("title", "").strip()
+    description = request.POST.get("description", "").strip()
+    thumbnail_file = request.FILES.get("thumbnail_file")
+
+    if not title:
+        return JsonResponse({"error": "Title is required"}, status=400)
+
+    try:
+        video.title = title
+        video.description = description
+
+        # اگر کاربر تامبنیل جدید فرستاد
+        if thumbnail_file:
+            thumb_res = upload_thumbnail(
+                file_data=thumbnail_file.read(),
+                file_name=thumbnail_file.name
+            )
+            video.thumbnail_url = thumb_res["url"]
+
+        video.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Video updated successfully",
+            "video": {
+                "id": video.id,
+                "title": video.title,
+                "description": video.description,
+                "thumbnail_url": video.thumbnail_url
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
