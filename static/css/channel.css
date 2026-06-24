@@ -167,15 +167,6 @@
     padding: 12px;
 }
 
-.video-title {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--text-color-primary);
-    margin-bottom: 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
 
 .video-meta {
     font-size: 0.85rem;
@@ -313,4 +304,16 @@
         top: 50px;
         right: 12px;
     }
+}
+
+.video-title {
+    font-size:13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #fff;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;   /* حداکثر 2 خط */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
