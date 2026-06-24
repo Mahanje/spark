@@ -1,0 +1,131 @@
+.notifications-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.notifications-title {
+    color: #fff;
+    margin-bottom: 24px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.notification-card {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    padding: 16px;
+    margin-bottom: 12px;
+
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+
+    transition: all .2s ease;
+}
+
+.notification-card:hover {
+    background: #222;
+    border-color: #333;
+}
+
+.notification-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    background: #333;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+    font-weight: bold;
+}
+
+.notification-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-text {
+    color: #eee;
+    line-height: 1.5;
+    font-size: 15px;
+}
+
+.notification-time {
+    margin-top: 6px;
+    color: #888;
+    font-size: 13px;
+}
+
+.notification-video {
+    margin-top: 8px;
+
+    display: inline-block;
+
+    background: #111;
+    color: #ccc;
+
+    padding: 6px 10px;
+    border-radius: 8px;
+
+    font-size: 13px;
+}
+
+.notification-video:hover {
+    color: white;
+}
+
+/*.notification-type-like {*/
+/*    color: #2ecc71;*/
+/*}*/
+
+/*.notification-type-comment {*/
+/*    color: #f1c40f;*/
+/*}*/
+
+/*.notification-type-subscriber {*/
+/*    color: #3498db;*/
+/*}*/
+
+.empty-notifications {
+    text-align: center;
+    color: #888;
+    padding: 60px 20px;
+}
+
+
+.notification-comment {
+    margin-top: 8px;
+    padding: 10px;
+
+    background: #111;
+    border-left: 3px solid #444;
+    border-radius: 6px;
+
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.mobile-only-notification {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-only-notification {
+        display: flex;
+    }
+}

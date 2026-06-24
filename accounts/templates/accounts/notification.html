@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/notification.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="notifications-container">
+
+    <h1 class="notifications-title">
+        Notifications
+    </h1>
+
+    {% if notifications %}
+
+    {% for n in notifications %}
+
+    <div class="notification-card">
+
+        <div class="notification-avatar">
+
+            {% if n.user.profile.avatar_url %}
+            <img src="{{ n.user.profile.avatar_url }}"
+                 alt="{{ n.user.username }}">
+            {% else %}
+            {{ n.user.username|slice:":1"|upper }}
+            {% endif %}
+
+        </div>
+
+        <div class="notification-content">
+
+            {% if n.type == "subscriber" %}
+
+            <div class="notification-text notification-type-subscriber">
+
+                <strong>{{ n.user.username }}</strong>
+                subscribed to your channel
+            </div>
+
+            {% elif n.type == "like" %}
+
+            <div class="notification-text notification-type-like">
+
+                <strong>{{ n.user.username }}</strong>
+                liked your video
+            </div>
+
+            <a href="{% url 'videos:detail' n.video.id %}"
+               class="notification-video">
+                {{ n.video.title }}
+            </a>
+
+            {% elif n.type == "comment" %}
+
+            <div class="notification-text notification-type-comment">
+
+                <strong>{{ n.user.username }}</strong>
+                commented on your video
+            </div>
+
+            <div class="notification-comment">
+                "{{ n.text|truncatechars:100 }}"
+            </div>
+
+            <a href="{% url 'videos:detail' n.video.id %}"
+               class="notification-video">
+                {{ n.video.title }}
+            </a>
+
+            {% endif %}
+
+            <div class="notification-time">
+                {{ n.created_at|timesince }} ago
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+    {% else %}
+
+    <div class="empty-notifications">
+         No notifications yet
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

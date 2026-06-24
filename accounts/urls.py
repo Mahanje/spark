@@ -18,10 +18,10 @@ urlpatterns = [
         success_url=reverse_lazy('accounts:login')
     ), name='register'),
 
-
     path('profile/', views.profile, name='profile'),
     path('subscribe/<str:username>/', views.toggle_subscribe, name='toggle_subscribe'),
     path('subscriptions/', views.subscriptions, name='subscriptions'),
     path('history/', views.history, name='history'),
+    path("notification/", views.notifications, name="notification"),
 
 ]

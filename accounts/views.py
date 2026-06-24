@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect, get_object_or_404  # گرفتن یک شیء از دیتابیس؛ اگر پیدا نشود خطای 404 می‌دهد.
+from django.shortcuts import render, redirect, \
+    get_object_or_404  # گرفتن یک شیء از دیتابیس؛ اگر پیدا نشود خطای 404 می‌دهد.
 from django.contrib import messages  # برای نمایش پیام‌های موفقیت یا خطا
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy  # برای ساخت URL بر اساس نام Route
@@ -6,6 +7,8 @@ from django.views.generic import CreateView
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST  # Import require_POST
 from django.http import JsonResponse
+from itertools import groupby
+from datetime import date
 
 from videos.imagekit_client import upload_avatar
 from videos.models import Video, VideoLike, Comment
@@ -109,19 +112,57 @@ def history(request):
     comments = (
         Comment.objects
         .filter(user=request.user)
-        .select_related('video', 'video__user', 'video__user__profile')
-        .order_by('-created_at')
+        .select_related(
+            'video',
+            'video__user',
+            'video__user__profile'
+        )
     )
 
     likes = (
         VideoLike.objects
         .filter(user=request.user)
-        .select_related('video', 'video__user', 'video__user__profile')
-        .order_by('-created_at')
+        .select_related(
+            'video',
+            'video__user',
+            'video__user__profile'
+        )
+    )
+
+    new_subscribers = (
+        Subscription.objects
+        .filter(channel=request.user)
+        .select_related(
+            'subscriber',
+            'subscriber__profile'
+        )
+    )
+
+    video_likes = (
+        VideoLike.objects
+        .filter(video__user=request.user)
+        .exclude(user=request.user)
+        .select_related(
+            'user',
+            'user__profile',
+            'video'
+        )
+    )
+
+    video_comments = (
+        Comment.objects
+        .filter(video__user=request.user)
+        .exclude(user=request.user)
+        .select_related(
+            'user',
+            'user__profile',
+            'video'
+        )
     )
 
     events = []
 
+    # فعالیت‌های خود کاربر
     for c in comments:
         events.append({
             "type": "comment",
@@ -135,14 +176,51 @@ def history(request):
             "type": "like" if l.value == VideoLike.LIKE else "dislike",
             "created_at": l.created_at,
             "video": l.video,
-            "value": l.value,
         })
 
-    events.sort(key=lambda e: e["created_at"], reverse=True)
+    # فعالیت روی کانال کاربر
+    for sub in new_subscribers:
+        events.append({
+            "type": "subscriber",
+            "created_at": sub.created_at,
+            "subscriber": sub.subscriber,
+        })
 
-    return render(request, "accounts/history.html", {
-        "events": events,
-    })
+    for like in video_likes:
+        events.append({
+            "type": "video_received_like",
+            "created_at": like.created_at,
+            "video": like.video,
+            "user": like.user,
+        })
+
+    for comment in video_comments:
+        events.append({
+            "type": "video_received_comment",
+            "created_at": comment.created_at,
+            "video": comment.video,
+            "user": comment.user,
+            "text": comment.text,
+        })
+
+    events.sort(
+        key=lambda x: x["created_at"],
+        reverse=True
+    )
+
+    events_by_date = {}
+
+    for e in events:
+        day = e["created_at"].date()
+        events_by_date.setdefault(day, []).append(e)
+
+    return render(
+        request,
+        "accounts/history.html",
+        {
+            "events_by_date": events_by_date
+        }
+    )
 
 
 @login_required
@@ -154,7 +232,7 @@ def subscriptions(request):
         .order_by('-created_at')
     )
 
-    #یعنی فقط کاربرهای کانال‌ها را از آبجکت‌های Subscription استخراج می‌کند.
+    # یعنی فقط کاربرهای کانال‌ها را از آبجکت‌های Subscription استخراج می‌کند.
     channels = [s.channel for s in subs]
 
     videos = (
@@ -169,3 +247,75 @@ def subscriptions(request):
         'videos': videos,
     })
 
+
+@login_required
+def notifications(request):
+    new_subscribers = (
+        Subscription.objects
+        .filter(channel=request.user)
+        .select_related(
+            "subscriber",
+            "subscriber__profile"
+        )
+    )
+
+    video_likes = (
+        VideoLike.objects
+        .filter(video__user=request.user)
+        .exclude(user=request.user)
+        .select_related(
+            "user",
+            "user__profile",
+            "video"
+        )
+    )
+
+    video_comments = (
+        Comment.objects
+        .filter(video__user=request.user)
+        .exclude(user=request.user)
+        .select_related(
+            "user",
+            "user__profile",
+            "video"
+        )
+    )
+
+    notifications = []
+
+    for sub in new_subscribers:
+        notifications.append({
+            "type": "subscriber",
+            "created_at": sub.created_at,
+            "user": sub.subscriber,
+        })
+
+    for like in video_likes:
+        notifications.append({
+            "type": "like",
+            "created_at": like.created_at,
+            "user": like.user,
+            "video": like.video,
+        })
+
+    for comment in video_comments:
+        notifications.append({
+            "type": "comment",
+            "created_at": comment.created_at,
+            "user": comment.user,
+            "video": comment.video,
+            "text": comment.text,
+        })
+
+    notifications.sort(
+        key=lambda x: x["created_at"],
+        reverse=True
+    )
+
+    return render(
+        request,
+        "accounts/notification.html",
+        {
+            "notifications": notifications
+        }
+    )

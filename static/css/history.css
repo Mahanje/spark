@@ -121,7 +121,25 @@
     .video-title {
         white-space: normal;
     }
+}
 
-/ در موبایل اجازه بده عنوان در دو خط بیاید */
+.event-badge {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.event-badge.video_like {
+    color: #2ecc71;
+    font-weight: 600;
+}
+
+.event-badge.video_dislike {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.event-badge.video_comment {
+    color: #ccc;
 }
 
