@@ -140,7 +140,8 @@ def _upload_image(file_data, file_name: str, folder: str) -> Dict[str, Any]:
         "url": response.url,
     }
 
-#wrapper
+
+# wrapper
 def upload_thumbnail(
         file_data,
         file_name: str,
@@ -153,7 +154,7 @@ def upload_avatar(
         file_data,
         file_name: str,
         folder: str = "avatars"
-) -> Dict[str, Any]: #type hint
+) -> Dict[str, Any]:  # type hint
     return _upload_image(file_data, file_name, folder)
 
 
@@ -165,8 +166,13 @@ def delete_video(file_id: str) -> bool:
         return False
 
     client = get_imagekit_client()
-    client.files.delete(file_id=file_id)
-    return True
+
+    try:
+        client.files.delete(file_id=file_id)
+        return True
+    except Exception as e:
+        print("ImageKit delete error:", str(e))
+        return False
 
 
 def delete_avatar(file_id: str) -> bool:
