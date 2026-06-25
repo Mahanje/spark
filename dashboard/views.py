@@ -53,18 +53,20 @@ def video_list(request):
     return render(request, 'dashboard/videos.html', context)
 
 
+
 @staff_member_required
 def comments(request):
-    all_comments = Comment.objects.select_related(
-        "user", "video"
-    ).order_by("-created_at")
+    all_comments = (
+        Comment.objects
+        .select_related("user", "video")
+        .order_by("-created_at")
+    )
 
-    # گرفتن تعداد آیتم در هر صفحه
     per_page = request.GET.get("per_page", 10)
 
     try:
         per_page = int(per_page)
-    except:
+    except ValueError:
         per_page = 10
 
     paginator = Paginator(all_comments, per_page)
@@ -72,12 +74,16 @@ def comments(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "dashboard/comments.html", {
-        "comments": page_obj,
-        "page_obj": page_obj,
-        "per_page": per_page,
-        "total_comments": comments.count()
-    })
+    return render(
+        request,
+        "dashboard/comments.html",
+        {
+            "comments": page_obj,
+            "page_obj": page_obj,
+            "per_page": per_page,
+            "total_comments": all_comments.count(),
+        }
+    )
 
 
 @staff_member_required
