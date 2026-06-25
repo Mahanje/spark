@@ -33,6 +33,7 @@
 }
 
 .thumb-link {
+    width: 100%;
     text-decoration: none;
     flex-shrink: 0;
 }
@@ -111,12 +112,9 @@
 
     .thumb-wrapper {
         width: 100%;
-    / عکس تمام عرض صفحه موبایل را می‌گیرد / height: auto;
+        height: auto;
     }
 
-    .thumb-link {
-        width: 100%;
-    }
 
     .video-title {
         white-space: normal;

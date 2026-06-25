@@ -129,79 +129,26 @@ def history(request):
         )
     )
 
-    new_subscribers = (
-        Subscription.objects
-        .filter(channel=request.user)
-        .select_related(
-            'subscriber',
-            'subscriber__profile'
-        )
-    )
-
-    video_likes = (
-        VideoLike.objects
-        .filter(video__user=request.user)
-        .exclude(user=request.user)
-        .select_related(
-            'user',
-            'user__profile',
-            'video'
-        )
-    )
-
-    video_comments = (
-        Comment.objects
-        .filter(video__user=request.user)
-        .exclude(user=request.user)
-        .select_related(
-            'user',
-            'user__profile',
-            'video'
-        )
-    )
-
     events = []
 
-    # فعالیت‌های خود کاربر
+    # کامنت‌های خود کاربر
     for c in comments:
-        events.append({
-            "type": "comment",
-            "created_at": c.created_at,
-            "video": c.video,
-            "text": c.text,
-        })
+        if c.video:
+            events.append({
+                "type": "comment",
+                "created_at": c.created_at,
+                "video": c.video,
+                "text": c.text,
+            })
 
+    # لایک و دیسلایک‌های خود کاربر
     for l in likes:
-        events.append({
-            "type": "like" if l.value == VideoLike.LIKE else "dislike",
-            "created_at": l.created_at,
-            "video": l.video,
-        })
-
-    # فعالیت روی کانال کاربر
-    for sub in new_subscribers:
-        events.append({
-            "type": "subscriber",
-            "created_at": sub.created_at,
-            "subscriber": sub.subscriber,
-        })
-
-    for like in video_likes:
-        events.append({
-            "type": "video_received_like",
-            "created_at": like.created_at,
-            "video": like.video,
-            "user": like.user,
-        })
-
-    for comment in video_comments:
-        events.append({
-            "type": "video_received_comment",
-            "created_at": comment.created_at,
-            "video": comment.video,
-            "user": comment.user,
-            "text": comment.text,
-        })
+        if l.video:
+            events.append({
+                "type": "like" if l.value == VideoLike.LIKE else "dislike",
+                "created_at": l.created_at,
+                "video": l.video,
+            })
 
     events.sort(
         key=lambda x: x["created_at"],
@@ -210,9 +157,9 @@ def history(request):
 
     events_by_date = {}
 
-    for e in events:
-        day = e["created_at"].date()
-        events_by_date.setdefault(day, []).append(e)
+    for event in events:
+        day = event["created_at"].date()
+        events_by_date.setdefault(day, []).append(event)
 
     return render(
         request,
@@ -284,10 +231,16 @@ def notifications(request):
     notifications = []
 
     for sub in new_subscribers:
+        subscribed_back = Subscription.objects.filter(
+            subscriber=request.user,
+            channel=sub.subscriber
+        ).exists()
+
         notifications.append({
             "type": "subscriber",
             "created_at": sub.created_at,
             "user": sub.subscriber,
+            "subscribed_back": subscribed_back,
         })
 
     for like in video_likes:

@@ -19,64 +19,88 @@
 
     <div class="notification-card">
 
-        <div class="notification-avatar">
+        <div class="notification-left">
 
-            {% if n.user.profile.avatar_url %}
-            <img src="{{ n.user.profile.avatar_url }}"
-                 alt="{{ n.user.username }}">
+            <a href="{% url 'videos:channel' n.user.username %}">
+                {% if n.user.profile.avatar_url %}
+                <img class="notification-avatar"
+                     src="{{ n.user.profile.avatar_url }}"
+                     alt="{{ n.user.username }}">
+                {% else %}
+                <div class="notification-avatar-placeholder">
+                    {{ n.user.username|slice:":1"|upper }}
+                </div>
+                {% endif %}
+            </a>
+
+            <div class="notification-content">
+
+                <a class="username"
+                   href="{% url 'videos:channel' n.user.username %}">
+                    {{ n.user.username }}
+                </a>
+
+                {% if n.type == 'subscriber' %}
+
+                <p>Subscribed to your channel</p>
+
+                {% elif n.type == 'like' %}
+
+                <p>Liked your video</p>
+
+                {% elif n.type == 'comment' %}
+
+                <p>Commented on your video</p>
+
+                <div class="comment-text">
+                    {{ n.text }}
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% if n.type == 'subscriber' %}
+
+        <div class="notification-action">
+
+            {% if not n.subscribed_back %}
+            <form class="subscribe-form"
+                  method="post"
+                  action="{% url 'accounts:toggle_subscribe' n.user.username %}">
+
+                {% csrf_token %}
+
+                <button class="subscribe-back-btn" type="submit">
+                    Subscribe Back
+                </button>
+
+            </form>
             {% else %}
-            {{ n.user.username|slice:":1"|upper }}
+
+            <button class="subscribe-back-btn subscribed-btn" disabled>
+                Subscribed
+            </button>
+
             {% endif %}
 
         </div>
 
-        <div class="notification-content">
+        {% elif n.video %}
 
-            {% if n.type == "subscriber" %}
+        <a class="notification-thumbnail"
+           href="{% url 'videos:detail' n.video.id %}">
 
-            <div class="notification-text notification-type-subscriber">
-
-                <strong>{{ n.user.username }}</strong>
-                subscribed to your channel
-            </div>
-
-            {% elif n.type == "like" %}
-
-            <div class="notification-text notification-type-like">
-
-                <strong>{{ n.user.username }}</strong>
-                liked your video
-            </div>
-
-            <a href="{% url 'videos:detail' n.video.id %}"
-               class="notification-video">
-                {{ n.video.title }}
-            </a>
-
-            {% elif n.type == "comment" %}
-
-            <div class="notification-text notification-type-comment">
-
-                <strong>{{ n.user.username }}</strong>
-                commented on your video
-            </div>
-
-            <div class="notification-comment">
-                "{{ n.text|truncatechars:100 }}"
-            </div>
-
-            <a href="{% url 'videos:detail' n.video.id %}"
-               class="notification-video">
-                {{ n.video.title }}
-            </a>
-
+            {% if n.video.thumbnail_url %}
+            <img src="{{ n.video.thumbnail_url }}"
+                 alt="{{ n.video.title }}">
             {% endif %}
 
-            <div class="notification-time">
-                {{ n.created_at|timesince }} ago
-            </div>
+        </a>
 
-        </div>
+        {% endif %}
 
     </div>
 
@@ -85,11 +109,47 @@
     {% else %}
 
     <div class="empty-notifications">
-         No notifications yet
+        No notifications yet
     </div>
 
     {% endif %}
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        document.querySelectorAll('.subscribe-form').forEach(function (form) {
+
+            form.addEventListener('submit', async function (e) {
+
+                e.preventDefault();
+
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': form.querySelector(
+                            '[name=csrfmiddlewaretoken]'
+                        ).value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.subscribed) {
+
+                    form.outerHTML = `
+                    <button class="subscribe-back-btn subscribed-btn" disabled>
+                        Subscribed
+                    </button>
+                `;
+                }
+            });
+        });
+
+    });
+</script>
+{% block extra_js %}{% endblock %}
 
 {% endblock %}
