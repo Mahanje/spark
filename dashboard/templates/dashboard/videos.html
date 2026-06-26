@@ -3,54 +3,116 @@
 {% block title %} - Videos{% endblock %}
 
 {% block content %}
-<h1>Videos</h1>
+
+<h1>Videos ({{ total_videos }})</h1>
 
 <div class="table-controls">
 
-<label>Show</label>
+    <label for="per-page-select">Show</label>
+
+    <select id="per-page-select">
+        <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+        <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+        <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+        <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+    </select>
 
 </div>
 
 <table class="table">
+
+    <thead>
     <tr>
         <th>ID</th>
+        <th>Thumbnail</th>
         <th>Title</th>
         <th>User</th>
         <th>Date</th>
+        <th style="width:120px;">Actions</th>
     </tr>
+    </thead>
+
+    <tbody>
 
     {% for v in videos %}
+
     <tr>
+
         <td>{{ v.id }}</td>
+
+        <td>
+
+            {% if v.thumbnail_url %}
+            <img src="{{ v.thumbnail_url }}"
+                 alt="{{ v.title }}"
+                 style="width:120px;height:68px;object-fit:cover;border-radius:8px;">
+            {% else %}
+            <img src="/static/images/images (1).png"
+                 alt="No Thumbnail"
+                 style="width:120px;height:68px;object-fit:cover;border-radius:8px;">
+            {% endif %}
+
+        </td>
+
         <td>{{ v.title }}</td>
+
         <td>{{ v.user.username }}</td>
-        <td>{{ v.created_at }}</td>
+
+        <td>{{ v.created_at|date:"Y-m-d H:i" }}</td>
+
+        <td>
+
+            <form method="post"
+                  action="{% url 'dashboard:delete_video' v.id %}"
+                  onsubmit="return confirm('Delete this video permanently?');">
+
+                {% csrf_token %}
+
+                <button class="delete-link" type="submit" style="background: transparent; border: none">
+                    Delete
+                </button>
+
+            </form>
+
+        </td>
+
     </tr>
+
+    {% empty %}
+
+    <tr>
+        <td colspan="6" style="text-align:center;">
+            No videos found.
+        </td>
+    </tr>
+
     {% endfor %}
 
+    </tbody>
+
 </table>
+
 {% include "components/pagination.html" %}
 
 <script>
 
-const perPageSelect = document.getElementById("per-page-select");
+    const perPageSelect = document.getElementById("per-page-select");
 
-if(perPageSelect){
+    if (perPageSelect) {
 
-    perPageSelect.addEventListener("change", function(){
+        perPageSelect.addEventListener("change", function () {
 
-        const perPage = this.value;
+            const url = new URL(window.location.href);
 
-        const url = new URL(window.location.href);
+            url.searchParams.set("per_page", this.value);
+            url.searchParams.set("page", 1);
 
-        url.searchParams.set("per_page", perPage);
-        url.searchParams.set("page", 1);
+            window.location.href = url;
 
-        window.location.href = url;
+        });
 
-    });
-
-}
+    }
 
 </script>
+
 {% endblock %}

@@ -53,7 +53,6 @@ def video_list(request):
     return render(request, 'dashboard/videos.html', context)
 
 
-
 @staff_member_required
 def comments(request):
     all_comments = (
@@ -241,3 +240,19 @@ def report_channel(request, user_id):
         return JsonResponse({"status": "reported"})
 
     return JsonResponse({"error": "invalid"}, status=400)
+
+
+@staff_member_required
+def delete_video(request, video_id):
+    video = get_object_or_404(Video, id=video_id)
+
+    if request.method == "POST":
+        title = video.title
+        video.delete()
+
+        messages.success(
+            request,
+            f'"{title}" was deleted successfully.'
+        )
+
+    return redirect("dashboard:videos")
