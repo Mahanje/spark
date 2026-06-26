@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/search.css' %}">
+{% endblock %}
+{% block content %}
+
+<div class="search-page">
+
+    <h2 class="search-heading">
+        Search results for "{{ query }}"
+    </h2>
+
+    {% if channels %}
+
+    <h3 class="search-section">
+        Channels
+    </h3>
+
+    {% for c in channels %}
+
+    <a class="channel-result"
+       href="{% url 'videos:channel' c.username %}">
+
+        {% if c.profile.avatar_url %}
+        <img class="channel-avatar"
+             src="{{ c.profile.avatar_url }}"
+             alt="{{ c.username }}">
+        {% else %}
+        <div class="channel-avatar-fallback">
+            {{ c.username|slice:":1"|upper }}
+        </div>
+        {% endif %}
+
+        <div>
+            <div class="channel-name">
+                {{ c.username }}
+            </div>
+        </div>
+
+    </a>
+
+    {% endfor %}
+
+    {% endif %}
+
+
+    {% if videos %}
+
+    <h3 class="search-section">
+        Videos
+    </h3>
+
+    {% for video in videos %}
+
+    <a class="video-result"
+       href="{% url 'videos:detail' video.id %}">
+
+        {% if video.thumbnail_url %}
+        <img class="video-thumb"
+             src="{{ video.thumbnail_url }}"
+             alt="{{ video.title }}">
+        {% else %}
+        <img class="video-thumb"
+             src="{% static 'images/images (1).png' %}"
+             alt="Default thumbnail">
+        {% endif %}
+
+        <div class="video-info">
+
+            <h4>{{ video.title }}</h4>
+
+            <p>{{ video.user.username }}</p>
+
+            {% if video.description %}
+            <span>
+                        {{ video.description|truncatechars:120 }}
+                    </span>
+            {% endif %}
+
+        </div>
+
+    </a>
+
+    {% endfor %}
+
+    {% endif %}
+
+    {% if not videos and not channels %}
+
+    <div class="search-empty">
+        No results found.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -385,3 +385,46 @@ def edit_video(request, video_id):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.shortcuts import render
+
+from .models import Video
+
+
+def search_results(request):
+    query = request.GET.get("q", "").strip()
+
+    videos = []
+    channels = []
+
+    if query:
+        videos = (
+            Video.objects.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(user__username__icontains=query)
+            )
+            .select_related("user")
+            .distinct()
+        )
+
+        channels = (
+            User.objects.filter(
+                username__icontains=query
+            )
+            .select_related("profile")
+            .distinct()
+        )
+
+    return render(
+        request,
+        "videos/search_results.html",
+        {
+            "query": query,
+            "videos": videos,
+            "channels": channels,
+        }
+    )

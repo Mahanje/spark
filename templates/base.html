@@ -60,21 +60,35 @@
 
 
     <div class="nav-center">
-        <form class="search-form" action="/search/" method="get" id="searchForm">
+        <form class="search-form"
+              action="{% url 'videos:search_results' %}"
+              method="get"
+              id="searchForm">
+
             <div class="search-wrapper" id="searchWrapper">
-                <input type="text" name="q" placeholder="Search" class="search-input" id="searchInput">
+                <input type="text"
+                       name="q"
+                       placeholder="Search"
+                       class="search-input"
+                       id="searchInput"
+                       autocomplete="off">
             </div>
-            <button type="button" class="search-btn" id="mobileSearchBtn">
+
+            <button type="submit" class="search-btn">
                 <svg viewBox="0 0 24 24" width="24" height="24">
-                    <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    <path fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
                           stroke-linejoin="round"
                           d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 5.5 5.5a7.5 7.5 0 0 0 11.15 11.15z"/>
                 </svg>
             </button>
+
         </form>
+
         <div class="search-results" id="searchResults"></div>
     </div>
-
     <!-- ======================================== -->
     <!-- MOBILE SEARCH OVERLAY -->
     <!-- ======================================== -->
@@ -372,7 +386,7 @@
 
                 box.innerHTML = "<div class='search-loading'>Searching...</div>";
 
-                fetch(`/search/?q=${encodeURIComponent(query)}`, {
+                fetch(`/search/api/?q=${encodeURIComponent(query)}`, {
                     signal: controller.signal
                 })
                     .then(res => res.json())
@@ -419,21 +433,23 @@
             data.channels.forEach(c => {
 
                 const avatar = (c.avatar && c.avatar.trim() !== "")
-                    ? `<img src="${c.avatar}" class="channel-avatar"/>`
+                    ? `<img src="${c.avatar}" class="channel-avatar" alt="${c.username}"/>`
                     : `<div class="channel-avatar-fallback">${c.fallback_letter || "?"}</div>`;
 
                 html += `
-                <div class="search-item channel"
-                     onclick="location.href='/channel/${c.username}/'">
+            <div class="search-item channel"
+                 onclick="location.href='/channel/${c.username}/'">
 
-                    ${avatar}
+                ${avatar}
 
-                    <div class="search-info">
-                        <div class="search-video-title">${escapeHtml(c.username)}</div>
+                <div class="search-info">
+                    <div class="search-video-title">
+                        ${escapeHtml(c.username)}
                     </div>
-
                 </div>
-            `;
+
+            </div>
+        `;
             });
         }
 
@@ -479,6 +495,7 @@
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#039;");
     }
+
 </script>
 {% block extra_js %}{% endblock %}
 

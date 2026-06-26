@@ -16,8 +16,10 @@ urlpatterns = [
     path('video/<int:video_id>/vote/', views.video_vote, name='video_vote'),
     path('video/<int:video_id>/delete/', views.delete_video, name='delete_video'),
     path('video/<int:video_id>/comment/', views.add_comment, name='add_comment'),
-    path('search/', views.search_videos, name='search'),
     path('comment/<int:pk>/delete/', views.delete_comment, name='delete_comment'),
     path('comment/<int:pk>/remove/', views.remove_comment, name='remove_comment'),
     path("videos/edit/<int:video_id>/", views.edit_video, name="edit_video"),
+    path("search/api/", views.search_videos, name="search_api"),
+    path("search/", views.search_results, name="search_results"),
+
 ]
