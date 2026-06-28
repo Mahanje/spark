@@ -1,4 +1,3 @@
-
 .history-container {
     max-width: 1000px;
     margin: 0 auto;
@@ -18,6 +17,15 @@
     gap: 16px;
 }
 
+/* تاریخ */
+.history-date {
+    font-size: 14px;
+    color: #999;
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
+/* آیتم اصلی */
 .history-item {
     background: #1c1c1c;
     border-radius: 12px;
@@ -25,26 +33,26 @@
     display: flex;
     gap: 16px;
     align-items: flex-start;
-    transition: background 0.2s;
+    transition: background 0.2s ease;
 }
 
 .history-item:hover {
     background: #252525;
 }
 
+/* لینک thumbnail */
 .thumb-link {
-    width: 100%;
-    text-decoration: none;
     flex-shrink: 0;
+    text-decoration: none;
 }
 
+/* تصویر */
 .thumb-wrapper {
     width: 160px;
     aspect-ratio: 16 / 9;
     border-radius: 8px;
     overflow: hidden;
     background: #333;
-    position: relative;
 }
 
 .thumb-img {
@@ -53,13 +61,15 @@
     object-fit: cover;
 }
 
+/* اطلاعات */
 .history-info {
-    flex-grow: 1;
+    flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
 }
 
+/* ردیف بالا */
 .meta-row {
     display: flex;
     align-items: center;
@@ -67,26 +77,30 @@
     margin-bottom: 8px;
 }
 
+/* آواتار */
 .avatar {
     width: 34px;
     height: 34px;
     border-radius: 50%;
     overflow: hidden;
     background: #444;
-    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
+    flex-shrink: 0;
+    color: white;
+    font-size: 14px;
 }
 
+/* عنوان و متن */
 .video-title {
     font-weight: 700;
-    color: white;
+    color: #fff;
+    font-size: 1.05rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 1.1rem;
 }
 
 .video-subtext {
@@ -94,50 +108,46 @@
     font-size: 13px;
 }
 
-.event-badge {
-    font-size: 14px;
-    margin-top: 4px;
-}
-
-@media (max-width: 600px) {
-    .history-container {
-        padding: 12px;
-    }
-
-    .history-item {
-        flex-direction: column;
-    / عکس می‌رود بالا، متن می‌آید پایین / gap: 12 px;
-        padding: 12px;
-    }
-
-    .thumb-wrapper {
-        width: 100%;
-        height: auto;
-    }
-
-
-    .video-title {
-        white-space: normal;
-    }
-}
-
+/* اکشن‌ها */
 .event-badge {
     margin-top: 6px;
     font-size: 13px;
     color: #aaa;
 }
 
-.event-badge.video_like {
+/* حالت‌ها */
+.event-badge.like {
     color: #2ecc71;
     font-weight: 600;
 }
 
-.event-badge.video_dislike {
+.event-badge.dislike {
     color: #e74c3c;
     font-weight: 600;
 }
 
-.event-badge.video_comment {
+.event-badge.comment {
     color: #ccc;
 }
 
+/* رسپانسیو موبایل */
+@media (max-width: 600px) {
+
+    .history-container {
+        padding: 12px;
+    }
+
+    .history-item {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .thumb-wrapper {
+        width: 100%;
+    }
+
+    .video-title {
+        white-space: normal;
+    }
+}
