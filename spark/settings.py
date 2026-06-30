@@ -15,6 +15,7 @@ import os
 
 import dj_database_url
 
+os.environ["PGHOSTADDR"] = ""
 # from django.conf.global_settings import MEDIA_URL, MEDIA_ROOT
 
 # from dotenv import load_dotenv
@@ -94,6 +95,10 @@ DATABASES = {
         conn_max_age=600,
         ssl_require=True,
     )
+}
+
+DATABASES["default"]["OPTIONS"] = {
+    "sslmode": "require",
 }
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
