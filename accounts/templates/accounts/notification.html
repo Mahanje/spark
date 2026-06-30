@@ -66,26 +66,25 @@
 
         <div class="notification-action">
 
-            {% if not n.subscribed_back %}
             <form class="subscribe-form"
                   method="post"
                   action="{% url 'accounts:toggle_subscribe' n.user.username %}">
 
                 {% csrf_token %}
 
-                <button class="subscribe-back-btn" type="submit">
+                <button
+                        class="subscribe-back-btn {% if n.subscribed_back %}subscribed-btn{% endif %}"
+                        type="submit">
+
+                    {% if n.subscribed_back %}
+                    Subscribed
+                    {% else %}
                     Subscribe Back
+                    {% endif %}
+
                 </button>
 
             </form>
-            {% else %}
-
-            <button class="subscribe-back-btn subscribed-btn" disabled>
-                Subscribed
-            </button>
-
-            {% endif %}
-
         </div>
 
         {% elif n.video %}
@@ -125,6 +124,10 @@
 
                 e.preventDefault();
 
+                const button = form.querySelector('button');
+
+                button.style.transform = "scale(.95)";
+
                 const response = await fetch(form.action, {
                     method: 'POST',
                     headers: {
@@ -137,15 +140,20 @@
 
                 const data = await response.json();
 
-                if (data.success && data.subscribed) {
+                if (data.success) {
 
-                    form.outerHTML = `
-                    <button class="subscribe-back-btn subscribed-btn" disabled>
-                        Subscribed
-                    </button>
-                `;
+                    if (data.subscribed) {
+                        button.textContent = "Subscribed";
+                        button.classList.add("subscribed-btn");
+                    } else {
+                        button.textContent = "Subscribe Back";
+                        button.classList.remove("subscribed-btn");
+                    }
+
                 }
+
             });
+
         });
 
     });

@@ -143,7 +143,11 @@
     font-weight: 600;
     cursor: pointer;
 
-    transition: opacity .2s ease;
+    transition: background-color .25s ease,
+    color .25s ease,
+    opacity .2s ease,
+    transform .2s ease,
+    box-shadow .25s ease;
 }
 
 .subscribe-back-btn:hover {
@@ -152,7 +156,7 @@
 
 .subscribed-btn {
     background: #2a2a2a !important;
-    color: #aaa !important;
+    color: #fff !important;
     cursor: default !important;
 }
 

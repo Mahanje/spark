@@ -25,28 +25,81 @@
 
         <div class="history-item">
 
+            {% if e.type == "subscribe" %}
+
+            <!-- Subscribe Activity -->
+            <div class="history-info" style="width:100%;">
+
+                <div class="meta-row" style="display:flex;justify-content:space-between;align-items:center;">
+
+                    <div style="display:flex;align-items:center;gap:14px;">
+
+                        <div class="avatar">
+                            {% if e.channel.profile.avatar_url %}
+                            <img src="{{ e.channel.profile.avatar_url }}"
+                                 alt="{{ e.channel.username }}"
+                                 style="width:100%;height:100%;object-fit:cover;">
+                            {% else %}
+                            {{ e.channel.username|slice:":1"|upper }}
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <div class="video-title">
+                                {{ e.channel.username }}
+                            </div>
+
+                            <div class="video-subtext">
+                                Subscribed to this channel
+                            </div>
+
+                            <div class="video-subtext">
+                                {{ e.created_at|date:"M d, Y" }}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <form class="history-subscribe-form"
+                          method="post"
+                          action="{% url 'accounts:toggle_subscribe' e.channel.username %}">
+
+                        {% csrf_token %}
+
+                        <button class="subscribe-btn subscribed-btn" type="submit">
+                            Subscribed
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% else %}
+
             <!-- Thumbnail -->
             <a href="{% url 'videos:detail' e.video.id %}" class="thumb-link">
+
                 <div class="thumb-wrapper">
 
                     {% if e.video.thumbnail_url %}
                     <img
                             src="{{ e.video.thumbnail_url }}"
                             alt="{{ e.video.title }}"
-                            class="thumb-img"
-                    >
+                            class="thumb-img">
                     {% else %}
                     <img
                             src="{% static 'images/images (1).png' %}"
                             alt="No thumbnail"
-                            class="thumb-img"
-                    >
+                            class="thumb-img">
                     {% endif %}
 
                 </div>
+
             </a>
 
-            <!-- Info -->
+            <!-- Video Activity -->
             <div class="history-info">
 
                 <div class="meta-row">
@@ -56,14 +109,14 @@
                         <img
                                 src="{{ e.video.user.profile.avatar_url }}"
                                 alt="{{ e.video.user.username }}"
-                                style="width:100%; height:100%; object-fit:cover;"
-                        >
+                                style="width:100%;height:100%;object-fit:cover;">
                         {% else %}
                         {{ e.video.user.username|slice:":1"|upper }}
                         {% endif %}
                     </div>
 
-                    <div style="min-width:0; flex-grow:1;">
+                    <div style="min-width:0;flex-grow:1;">
+
                         <div class="video-title">
                             {{ e.video.title }}
                         </div>
@@ -73,17 +126,17 @@
                             •
                             {{ e.created_at|date:"M d, Y" }}
                         </div>
+
                     </div>
 
                 </div>
 
-                <!-- Activity -->
                 <div class="event-badge {{ e.type }}">
 
                     {% if e.type == "comment" %}
 
                     <span style="font-weight:700;color:#ccc;">
-                         Commented:
+                        Commented:
                     </span>
 
                     <span style="color:#ddd;">
@@ -93,28 +146,22 @@
                     {% elif e.type == "like" %}
 
                     <span style="font-weight:700;color:#2ecc71;">
-                         Liked this video
+                        Liked this video
                     </span>
 
                     {% elif e.type == "dislike" %}
 
                     <span style="font-weight:700;color:#e74c3c;">
-                         Disliked this video
+                        Disliked this video
                     </span>
-
-                    {% else %}
-
-                    <span style="font-weight:700;">
-                        Activity:
-                    </span>
-
-                    {{ e.type|capfirst }}
 
                     {% endif %}
 
                 </div>
 
             </div>
+
+            {% endif %}
 
         </div>
 
@@ -127,11 +174,71 @@
     {% else %}
 
     <p style="color:#aaa;">
-        No history yet. Like or comment on videos and it will appear here.
+        No history yet. Like, comment, or subscribe to channels and your activity will appear here.
     </p>
 
     {% endif %}
 
 </div>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".history-subscribe-form").forEach(function (form) {
+
+            form.addEventListener("submit", async function (e) {
+
+                e.preventDefault();
+
+                const button = form.querySelector("button");
+
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value,
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!data.success) return;
+
+                // Click animation
+                button.animate(
+                    [
+                        {transform: "scale(1)"},
+                        {transform: "scale(.94)"},
+                        {transform: "scale(1)"}
+                    ],
+                    {
+                        duration: 220,
+                        easing: "ease"
+                    }
+                );
+
+                button.style.opacity = ".5";
+
+                setTimeout(() => {
+
+                    if (data.subscribed) {
+                        button.textContent = "Subscribed";
+                        button.classList.add("subscribed-btn");
+                    } else {
+                        button.textContent = "Subscribe";
+                        button.classList.remove("subscribed-btn");
+                    }
+
+                    button.style.opacity = "1";
+
+                }, 120);
+
+            });
+
+        });
+
+    });
+
+</script>
 
 {% endblock %}

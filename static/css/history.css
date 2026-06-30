@@ -151,3 +151,32 @@
         white-space: normal;
     }
 }
+
+.subscribe-btn {
+    background: #fff;
+    color: #000;
+
+    border: none;
+    border-radius: 20px;
+
+    padding: 10px 18px;
+
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: background-color .25s ease,
+    color .25s ease,
+    opacity .2s ease,
+    transform .2s ease,
+    box-shadow .25s ease;
+}
+
+.subscribe-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
+}
+
+.subscribed-btn {
+    background: #2a2a2a;
+    color: #fff;
+}

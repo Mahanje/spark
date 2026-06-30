@@ -7,8 +7,6 @@ from django.views.generic import CreateView
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST  # Import require_POST
 from django.http import JsonResponse
-from itertools import groupby
-from datetime import date
 
 from videos.imagekit_client import upload_avatar
 from videos.models import Video, VideoLike, Comment
@@ -129,6 +127,15 @@ def history(request):
         )
     )
 
+    subscriptions = (
+        Subscription.objects
+        .filter(subscriber=request.user)
+        .select_related(
+            'channel',
+            'channel__profile'
+        )
+    )
+
     events = []
 
     # کامنت‌های خود کاربر
@@ -149,6 +156,13 @@ def history(request):
                 "created_at": l.created_at,
                 "video": l.video,
             })
+
+    for s in subscriptions:
+        events.append({
+            "type": "subscribe",
+            "created_at": s.created_at,
+            "channel": s.channel,
+        })
 
     events.sort(
         key=lambda x: x["created_at"],
