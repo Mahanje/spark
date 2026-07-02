@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     "videos",
     "dashboard",
     "core",
-    "channels",
 ]
 
 MIDDLEWARE = [
@@ -120,11 +119,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -162,5 +156,3 @@ LOGIN_URL = 'accounts:login'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-ASGI_APPLICATION = "spark.asgi.application"
