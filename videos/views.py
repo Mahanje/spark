@@ -111,8 +111,11 @@ def video_upload(request):
     # اعتبارسنجی فرم
     if not form.is_valid():
         return JsonResponse(
-            {'error': 'Invalid form data'},
-            status=400
+            {
+                "success": False,
+                "errors": form.errors,
+            },
+            status=400,
         )
 
     try:

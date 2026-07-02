@@ -32,7 +32,7 @@
                     <li>{{error}}</li>
                     {% endfor %}
                     {% endfor %}
-                    {% for error in form.non_field_erros %}
+                    {% for error in form.non_field_errors %}
                     <li>{{ error }}</li>
                     {% endfor %}
                 </ul>
@@ -145,7 +145,10 @@
 
             if (!contentType.includes("application/json")) {
                 const text = await res.text();
-                throw new Error("Server returned HTML instead of JSON. Response starts with: " + text.slice(0, 100));
+
+                console.error("Unexpected response:", text);
+
+                throw new Error("An Error Occurred While Uploading The Video.");
             }
 
             const data = await res.json();
@@ -156,13 +159,23 @@
                 setTimeout(() => location.href = '{% url "videos:list" %}', 500);
             } else {
                 throw new Error(data.error || "Upload failed");
+
+            catch
+                (err)
+                {
+                    console.error(err);
+
+                    window.onbeforeunload = null;
+                    $("uploadOverlay").classList.remove("active");
+                    $("submitBtn").disabled = false;
+
+                    $("errorContainer").innerHTML = `
+        <ul class="error-list">
+            <li>An Error Occurred, Please Try Again Later.</li>
+        </ul>
+    `;
+                }
             }
-        } catch (err) {
-            window.onbeforeunload = null;
-            $("uploadOverlay").classList.remove("active");
-            $("submitBtn").disabled = false;
-            $("errorContainer").innerHTML = `<ul class="error-list"><li>${err.message || "Upload failed"}</li></ul>`;
-        }
-    };
+            ;
 </script>
 {% endblock %}
