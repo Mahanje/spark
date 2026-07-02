@@ -57,18 +57,14 @@ def search_videos(request):
             "channels": []
         })
 
-    # =========================
-    # 🎥 VIDEOS
-    # =========================
+    #  VIDEOS
     videos = Video.objects.filter(
         Q(title__icontains=query) |
         Q(description__icontains=query) |
         Q(user__username__icontains=query)
     ).select_related("user")[:10]
 
-    # =========================
-    # 👤 CHANNELS
-    # =========================
+    #  CHANNELS
     channels_qs = User.objects.filter(
         username__icontains=query
     ).select_related("profile")[:5]
@@ -78,7 +74,7 @@ def search_videos(request):
     for u in channels_qs:
         profile = getattr(u, "profile", None)
 
-        # ✅ چون avatar_url هست (نه ImageField)
+        #  چون avatar_url هست (نه ImageField)
         avatar_url = ""
 
         if profile and getattr(profile, "avatar_url", None):
@@ -91,9 +87,6 @@ def search_videos(request):
             "fallback_letter": (u.username[:1].upper() if u.username else "?")
         })
 
-    # =========================
-    # 📦 RESPONSE
-    # =========================
     return JsonResponse({
         "videos": [
             {

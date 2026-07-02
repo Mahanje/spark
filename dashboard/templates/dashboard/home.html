@@ -1,16 +1,268 @@
 {% extends "dashboard/base.html" %}
+{% load static %}
 
-{% block title %} - Home{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
+
 <h1>Dashboard</h1>
 
 <div class="cards">
 
-    <a class="card" href="/dashboard/users/">👤 Users</a>
-    <a class="card" href="/dashboard/videos/">🎬 Videos</a>
-    <a class="card" href="/dashboard/comments/">💬 Comments</a>
-    <a class="card" href="/dashboard/reports/">🚩 Reports</a>
+    <a class="card" href="/dashboard/users/">
+        <h3>{{ users_count }}</h3>
+        <p>Users</p>
+    </a>
+
+    <a class="card" href="/dashboard/videos/">
+        <h3>{{ videos_count }}</h3>
+        <p>Videos</p>
+    </a>
+
+    <a class="card" href="/dashboard/comments/">
+        <h3>{{ comments_count }}</h3>
+        <p>Comments</p>
+    </a>
+
+    <a class="card" href="/dashboard/reports/">
+        <h3>{{ reports_count }}</h3>
+        <p>Reports</p>
+    </a>
 
 </div>
+
+
+<div class="charts">
+
+    <div class="chart-box bar-box">
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <div class="chart-box pie-box">
+        <canvas id="pieChart"></canvas>
+    </div>
+
+    <div class="chart-box full">
+        <canvas id="lineChart"></canvas>
+    </div>
+
+    <div class="chart-box full">
+        <canvas id="topVideosChart"></canvas>
+    </div>
+
+</div>
+
+{{ bar_labels|json_script:"bar-labels" }}
+{{ bar_values|json_script:"bar-values" }}
+{{ pie_labels|json_script:"pie-labels" }}
+{{ pie_values|json_script:"pie-values" }}
+{{ months|json_script:"months" }}
+{{ upload_counts|json_script:"uploads" }}
+
+{{ top_videos_labels|json_script:"top-videos-labels" }}
+{{ top_videos_views|json_script:"top-videos-views" }}
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+    const barLabels = JSON.parse(document.getElementById("bar-labels").textContent);
+    const barValues = JSON.parse(document.getElementById("bar-values").textContent);
+
+    new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+            labels: barLabels,
+            datasets: [{
+                label: "Statistics",
+                data: barValues,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#f5f5f5"
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#ddd"
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,.08)"
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "#ddd"
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,.08)"
+                    }
+                }
+            }
+        }
+    });
+
+    const pieLabels = JSON.parse(document.getElementById("pie-labels").textContent);
+    const pieValues = JSON.parse(document.getElementById("pie-values").textContent);
+
+    new Chart(document.getElementById("pieChart"), {
+        type: "pie",
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieValues
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        color: "#f5f5f5",
+                        padding: 18
+                    }
+                }
+            }
+        }
+    });
+
+    const months = JSON.parse(document.getElementById("months").textContent);
+    const uploads = JSON.parse(document.getElementById("uploads").textContent);
+
+    new Chart(document.getElementById("lineChart"), {
+        type: "line",
+        data: {
+            labels: months,
+            datasets: [{
+                label: "Uploaded Videos",
+                data: uploads,
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59,130,246,.15)",
+                fill: true,
+                tension: .35,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#f5f5f5"
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#ddd"
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,.08)"
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "#ddd"
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,.08)"
+                    }
+                }
+            }
+        }
+    });
+
+    const topLabels = JSON.parse(
+        document.getElementById("top-videos-labels").textContent
+    );
+
+    const topViews = JSON.parse(
+        document.getElementById("top-videos-views").textContent
+    );
+
+    new Chart(document.getElementById("topVideosChart"), {
+
+        type: "bar",
+
+        data: {
+            labels: topLabels,
+            datasets: [{
+                label: "Views",
+                data: topViews,
+                backgroundColor: "#8b5cf6",
+                borderRadius: 8
+            }]
+        },
+
+        options: {
+
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Top 10 Most Viewed Videos",
+                    color: "#fff",
+                    font: {
+                        size: 18,
+                        weight: "bold"
+                    }
+                },
+
+                legend: {
+                    labels: {
+                        color: "#fff"
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#ddd"
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,.08)"
+                    }
+                },
+
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "#ddd"
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,.08)"
+                    }
+                }
+            }
+
+        }
+
+    });
+
+
+</script>
+
 {% endblock %}

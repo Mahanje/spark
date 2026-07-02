@@ -12,10 +12,87 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 
+from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+
+User = get_user_model()
+
 
 @staff_member_required
 def dashboard_home(request):
-    return render(request, "dashboard/home.html")
+    users_count = User.objects.count()
+    videos_count = Video.objects.count()
+    comments_count = Comment.objects.count()
+    reports_count = Report.objects.count()
+
+    uploads = (
+        Video.objects
+        .annotate(month=TruncMonth("created_at"))
+        .values("month")
+        .annotate(total=Count("id"))
+        .order_by("month")
+    )
+
+    months = [
+        item["month"].strftime("%b %Y")
+        for item in uploads
+    ]
+
+    upload_counts = [
+        item["total"]
+        for item in uploads
+    ]
+
+    context = {
+        "users_count": users_count,
+        "videos_count": videos_count,
+        "comments_count": comments_count,
+        "reports_count": reports_count,
+
+        "bar_labels": [
+            "Users",
+            "Videos",
+            "Comments",
+            "Reports"
+        ],
+        "bar_values": [
+            users_count,
+            videos_count,
+            comments_count,
+            reports_count
+        ],
+
+        "pie_labels": [
+            "Pending",
+            "Resolved",
+        ],
+
+        "pie_values": [
+            Report.objects.filter(is_resolved=False).count(),
+            Report.objects.filter(is_resolved=True).count(),
+        ],
+
+        "months": months,
+        "upload_counts": upload_counts,
+    }
+
+    top_videos = (
+        Video.objects
+        .order_by("-views")[:10]
+    )
+
+    context["top_videos_labels"] = [
+        video.title if len(video.title) <= 25 else video.title[:25] + "..."
+        for video in top_videos
+    ]
+
+    context["top_videos_views"] = [
+        video.views
+        for video in top_videos
+    ]
+
+    return render(request, "dashboard/home.html", context)
 
 
 @staff_member_required
