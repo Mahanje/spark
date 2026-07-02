@@ -1,6 +1,8 @@
 {% extends "dashboard/base.html" %}
 
+{% block title %} - Users{% endblock %}
 {% block content %}
+
 
 <div class="users-top">
 
@@ -19,21 +21,15 @@
 
     <thead>
     <tr>
-
-        <th>
-            <a href="?sort=username&per_page={{ per_page }}">Username</a>
-        </th>
+        <th>Username</th>
 
         <th>Email</th>
 
-        <th>
-            <a href="?sort=date_joined&per_page={{ per_page }}">Joined</a>
-        </th>
+        <th>Joined</th>
 
         <th>Status</th>
 
         <th>Actions</th>
-
     </tr>
     </thead>
 
