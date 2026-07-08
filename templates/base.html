@@ -241,7 +241,7 @@
         {% if user.is_authenticated %}
         <div class="user-info-mobile">
             <span class="user-name-mobile">{{ user.username }}</span>
-            <form method="post" action="{% url 'accounts:logout' %}">
+            <form class="logout-btn" method="post" action="{% url 'accounts:logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="mobile-logout-btn">Logout</button>
             </form>
