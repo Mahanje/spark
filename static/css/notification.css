@@ -196,3 +196,28 @@
         display: flex;
     }
 }
+
+.notification-wrapper {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-link i {
+    font-size: 22px;
+}
+
+.notification-badge {
+    top: 3px;
+    right: 3px;
+}

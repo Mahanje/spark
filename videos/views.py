@@ -212,6 +212,13 @@ def video_vote(request, video_id):
                 user_vote = vote_value
         else:
             VideoLike.objects.create(user=request.user, video=video, value=vote_value)
+            if vote_value == VideoLike.LIKE and request.user != video.user:
+                Notification.objects.create(
+                    receiver=video.user,
+                    sender=request.user,
+                    type=Notification.LIKE,
+                    video=video,
+                )
             if vote_value == VideoLike.LIKE:
                 video.likes += 1
             else:
@@ -239,6 +246,14 @@ def add_comment(request, video_id):
         return JsonResponse({'error': 'Comment text is empty'}, status=400)
 
     comment = Comment.objects.create(video=video, user=request.user, text=text)
+    if request.user != video.user:
+        Notification.objects.create(
+            receiver=video.user,
+            sender=request.user,
+            type=Notification.COMMENT,
+            video=video,
+            comment=comment,
+        )
     return JsonResponse({
         'success': True,
         'comment': {
@@ -388,6 +403,7 @@ from django.db.models import Q
 from django.shortcuts import render
 
 from .models import Video
+from accounts.models import Notification
 
 
 def search_results(request):

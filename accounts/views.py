@@ -12,7 +12,7 @@ from videos.imagekit_client import upload_avatar
 from videos.models import Video, VideoLike, Comment
 
 from .forms import CustomUserCreationForm, UserUpdateForm, ProfileUpdateForm
-from .models import Profile, Subscription  # Ensure Subscription is imported
+from .models import Profile, Subscription, Notification  # Ensure Subscription is imported
 
 
 class RegisterView(CreateView):
@@ -90,8 +90,16 @@ def toggle_subscribe(request, username):
         subscriber=request.user,
         channel=channel_user
     )
+
     if created:
         subscribed = True
+
+        Notification.objects.create(
+            receiver=channel_user,
+            sender=request.user,
+            type=Notification.SUBSCRIBE,
+        )
+
     else:
         sub.delete()
         subscribed = False
@@ -211,73 +219,27 @@ def subscriptions(request):
 
 @login_required
 def notifications(request):
-    new_subscribers = (
-        Subscription.objects
-        .filter(channel=request.user)
+    Notification.objects.filter(
+        receiver=request.user,
+        is_read=False
+    ).update(is_read=True)
+
+    notifications = (
+        Notification.objects
+        .filter(receiver=request.user)
         .select_related(
-            "subscriber",
-            "subscriber__profile"
+            "sender",
+            "sender__profile",
+            "video",
+            "comment",
         )
     )
 
-    video_likes = (
-        VideoLike.objects
-        .filter(video__user=request.user)
-        .exclude(user=request.user)
-        .select_related(
-            "user",
-            "user__profile",
-            "video"
-        )
-    )
-
-    video_comments = (
-        Comment.objects
-        .filter(video__user=request.user)
-        .exclude(user=request.user)
-        .select_related(
-            "user",
-            "user__profile",
-            "video"
-        )
-    )
-
-    notifications = []
-
-    for sub in new_subscribers:
-        subscribed_back = Subscription.objects.filter(
+    for n in notifications:
+        n.subscribed_back = Subscription.objects.filter(
             subscriber=request.user,
-            channel=sub.subscriber
+            channel=n.sender
         ).exists()
-
-        notifications.append({
-            "type": "subscriber",
-            "created_at": sub.created_at,
-            "user": sub.subscriber,
-            "subscribed_back": subscribed_back,
-        })
-
-    for like in video_likes:
-        notifications.append({
-            "type": "like",
-            "created_at": like.created_at,
-            "user": like.user,
-            "video": like.video,
-        })
-
-    for comment in video_comments:
-        notifications.append({
-            "type": "comment",
-            "created_at": comment.created_at,
-            "user": comment.user,
-            "video": comment.video,
-            "text": comment.text,
-        })
-
-    notifications.sort(
-        key=lambda x: x["created_at"],
-        reverse=True
-    )
 
     return render(
         request,
@@ -286,3 +248,15 @@ def notifications(request):
             "notifications": notifications
         }
     )
+
+
+@login_required
+def unread_notifications(request):
+    count = Notification.objects.filter(
+        receiver=request.user,
+        is_read=False
+    ).count()
+
+    return JsonResponse({
+        "count": count
+    })

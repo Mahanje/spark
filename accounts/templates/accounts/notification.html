@@ -21,14 +21,14 @@
 
         <div class="notification-left">
 
-            <a href="{% url 'videos:channel' n.user.username %}">
-                {% if n.user.profile.avatar_url %}
+            <a href="{% url 'videos:channel' n.sender.username %}">
+                {% if n.sender.profile.avatar_url %}
                 <img class="notification-avatar"
-                     src="{{ n.user.profile.avatar_url }}"
-                     alt="{{ n.user.username }}">
+                     src="{{ n.sender.profile.avatar_url }}"
+                     alt="{{ n.sender.username }}">
                 {% else %}
                 <div class="notification-avatar-placeholder">
-                    {{ n.user.username|slice:":1"|upper }}
+                    {{ n.sender.username|slice:":1"|upper }}
                 </div>
                 {% endif %}
             </a>
@@ -36,11 +36,11 @@
             <div class="notification-content">
 
                 <a class="username"
-                   href="{% url 'videos:channel' n.user.username %}">
-                    {{ n.user.username }}
+                   href="{% url 'videos:channel' n.sender.username %}">
+                    {{ n.sender.username }}
                 </a>
 
-                {% if n.type == 'subscriber' %}
+                {% if n.type == 'subscribe' %}
 
                 <p>Subscribed to your channel</p>
 
@@ -53,7 +53,7 @@
                 <p>Commented on your video</p>
 
                 <div class="comment-text">
-                    {{ n.text }}
+                   {{ n.comment.text }}
                 </div>
 
                 {% endif %}
@@ -62,13 +62,13 @@
 
         </div>
 
-        {% if n.type == 'subscriber' %}
+        {% if n.type == 'subscribe' %}
 
         <div class="notification-action">
 
             <form class="subscribe-form"
                   method="post"
-                  action="{% url 'accounts:toggle_subscribe' n.user.username %}">
+                  action="{% url 'accounts:toggle_subscribe' n.sender.username %}">
 
                 {% csrf_token %}
 

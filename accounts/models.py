@@ -4,6 +4,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings  # Import settings
 
+from videos.models import Video, VideoLike, Comment
+
 
 class Profile(models.Model):
     # ارتباط یک به یک با User هر کاربر فقط یک پروفایل دارد با حذف User پروفایل هم حذف می‌شود
@@ -51,8 +53,61 @@ def create_user_profile(sender, instance, created, **kwargs):
         # برایش یک Profile هم ساخته می‌شود
         Profile.objects.create(user=instance)
 
+
 # هر بار که User ذخیره شود (حتی edit)، این signal اجرا می‌شود
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     # پروفایل مرتبط هم ذخیره می‌شود
     instance.profile.save()
+
+
+class Notification(models.Model):
+    SUBSCRIBE = "subscribe"
+    LIKE = "like"
+    COMMENT = "comment"
+
+    TYPES = [
+        (SUBSCRIBE, "Subscribe"),
+        (LIKE, "Like"),
+        (COMMENT, "Comment"),
+    ]
+
+    receiver = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="received_notifications"
+    )
+
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_notifications"
+    )
+
+    type = models.CharField(max_length=20, choices=TYPES)
+
+    video = models.ForeignKey(
+        Video,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.sender} -> {self.receiver} ({self.type})"
+
+

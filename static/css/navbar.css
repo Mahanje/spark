@@ -148,9 +148,23 @@
 @media (max-width: 768px) {
 
     .search-form {
+        border: none !important;
+        box-shadow: none !important;
         max-width: 48px;
         justify-content: center;
     }
+
+    .search-btn {
+        width: 40px;
+        height: 40px;
+
+        background: transparent !important;
+        border: none !important;
+        border-radius: 50%;
+
+        box-shadow: none;
+    }
+
 
     .search-box {
         display: none; /* اول مخفی */
@@ -158,8 +172,6 @@
         top: 60px;
         right: 10px;
         width: 250px;
-        background: #121212;
-        border-radius: 10px;
         padding: 10px;
         z-index: 9999;
     }
@@ -251,6 +263,21 @@
     .mobile-search-overlay {
         display: none !important;
     }
+
+    .search-btn {
+        width: 40px;
+        height: 40px;
+
+        background: transparent !important;
+        border: none !important;
+        border-radius: 50%;
+
+        box-shadow: none;
+    }
+
+    .search-btn:hover {
+        background: rgba(255, 255, 255, .08);
+    }
 }
 
 
@@ -278,9 +305,16 @@
 
 @media (max-width: 768px) {
 
-    .nav-right,
-    .desktop-auth,
-    .user-name {
+    .nav-right {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+        min-width: auto;
+    }
+
+    .user-name,
+    .btn-link,
+    .btn-signup {
         display: none !important;
     }
 
@@ -299,5 +333,67 @@
     .search-form {
         width: auto;
     }
+}
 
+
+.notification-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-right: 10px;
+}
+
+.notification-link {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    color: #fff;
+
+    transition: .2s;
+}
+
+.notification-link:hover {
+    background: #272727;
+}
+
+.notification-link i {
+    font-size: 22px;
+}
+
+.notification-badge {
+    position: absolute;
+
+    top: 2px;
+    right: 2px;
+
+    min-width: 18px;
+    height: 18px;
+
+    padding: 0 4px;
+
+    background: #cc0000;
+    color: #fff;
+
+    border-radius: 999px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    border: 2px solid #0f0f0f;
+
+    z-index: 9999;
 }
