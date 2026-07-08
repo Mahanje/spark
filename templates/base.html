@@ -77,7 +77,7 @@
                        autocomplete="off">
             </div>
 
-            <button type="submit" class="search-btn">
+            <button type="button" class="search-btn" id="mobileSearchBtn">
                 <svg viewBox="0 0 24 24" width="24" height="24">
                     <path fill="none"
                           stroke="currentColor"
@@ -97,16 +97,15 @@
     <!-- ======================================== -->
     <div class="mobile-search-overlay" id="mobileSearchOverlay" style="display: none;">
         <div class="mobile-search-container">
-
-            <!-- هدر -->
-            <div class="mobile-search-header">
-                <button type="button" id="closeSearchBtn" class="close-search-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18M6 6l12 12"/>
-                    </svg>
-                </button>
-                <span class="mobile-search-title">Search</span>
-            </div>
+            <button type="button" id="closeSearchBtn" class="close-search-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"/>
+                </svg>
+            </button>
 
             <!-- باکس جستجو -->
             <div class="mobile-search-body">
@@ -339,6 +338,9 @@
             mobileOverlay.style.display = "block";
             mobileOverlay.classList.add("active");
 
+            setTimeout(() => {
+                mobileInput.focus();
+            }, 200);
         }
 
         function closeSearch() {
